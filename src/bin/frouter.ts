@@ -6,7 +6,6 @@ import {
   loadConfig,
   saveConfig,
   getApiKey,
-  runFirstRunWizard,
   promptMasked,
   PROVIDERS_META,
   validateProviderApiKey,
@@ -141,13 +140,11 @@ let tierFilter = "All";
 let pingMs = 2000;
 let screen = "main"; // 'main' | 'settings' | 'target' | 'help'
 let sCursor = 0;
-let tCursor = 0;
 let selModel = null;
 let sEditing = false;
 let sKeyBuf = "";
 let sTestRes = {};
 let sNotice = "";
-let tNotice = "";
 let pingRef = null;
 let userNavigated = false; // true once user actively moves cursor
 let autoSortPauseUntil = 0;
@@ -580,50 +577,6 @@ function renderSettings() {
   w(out);
 }
 
-// ─── Target picker ─────────────────────────────────────────────────────────────
-const TARGETS = [
-  {
-    id: "opencode",
-    label: "OpenCode CLI",
-    path: "~/.config/opencode/opencode.json",
-    enabled: true,
-  },
-  {
-    id: "openclaw",
-    label: "OpenClaw",
-    path: "~/.openclaw/openclaw.json",
-    enabled: false,
-  },
-];
-
-function renderTarget() {
-  const name = selModel?.displayName || selModel?.id || "?";
-  const fullId = selModel ? `${selModel.providerKey}/${selModel.id}` : "";
-  let out = CLEAR + HIDEC;
-  out += `${BG_HDR}${WHITE}${B} Configure: ${name} ${R}\n`;
-  out += `${D}  ${fullId}${R}\n\n`;
-
-  for (let i = 0; i < TARGETS.length; i++) {
-    const t = TARGETS[i];
-    const isSel = i === tCursor;
-    const prefix = isSel ? `${B} ❯ ${R}` : "   ";
-    const status = t.enabled
-      ? `${GREEN}[enabled]${R}`
-      : `${YELLOW}[disabled]${R}`;
-    out += `${prefix}${pad(t.label, 12)} ${status}  ${D}${t.path}${R}\n`;
-  }
-
-  const target = TARGETS[tCursor];
-  if (target && !target.enabled) {
-    out += `\n${YELLOW} ${target.label} is currently disabled.${R}\n`;
-  } else if (tNotice) {
-    out += `\n${tNotice}\n`;
-  }
-
-  out += `\n${INVERT} Enter:save + open  G:same  S:save only  ESC:cancel ${R}\n`;
-  w(out);
-}
-
 // ─── Render dispatcher ─────────────────────────────────────────────────────────
 function render() {
   switch (screen) {
@@ -632,9 +585,6 @@ function render() {
       break;
     case "settings":
       renderSettings();
-      break;
-    case "target":
-      renderTarget();
       break;
     case "help":
       renderHelp();
@@ -805,7 +755,6 @@ async function launchOpenCodeDirect() {
       setTimeout(() => { restoreAfterInkSubApp("main"); restartLoop(); }, 1400);
       return;
     }
-    const { spawnSync } = await import("node:child_process");
     const launchEnv = buildOpenCodeLaunchEnv(openCodePk, openCodeApiKey);
     cleanup();
     const proc = spawnSync("opencode", [], {
@@ -1209,104 +1158,6 @@ function handleSettings(ch) {
   renderWithAuthority("settings-ui");
 }
 
-async function handleTarget(ch) {
-  tNotice = "";
-  if (ch === "\x1b" || ch === "q") {
-    screen = "main";
-    renderWithAuthority("target-ui");
-    return;
-  } else if (ch === UP) {
-    tCursor = Math.max(0, tCursor - 1);
-  } else if (ch === DOWN) {
-    tCursor = Math.min(TARGETS.length - 1, tCursor + 1);
-  }
-
-  // Enter/G = write config + open target; S = write config only
-  if (ch === "\r" || ch === "g" || ch === "G" || ch === "s" || ch === "S") {
-    const target = TARGETS[tCursor];
-    if (!target?.enabled) {
-      tNotice = `${YELLOW} ${target?.label || "This target"} is currently disabled.${R}`;
-      renderWithAuthority("target-ui");
-      return;
-    }
-
-    const launch = !(ch === "s" || ch === "S");
-    const { openCodeModel, openCodePk, openCodeApiKey, notice } =
-      resolveOpenCodeApplySelection(selModel);
-
-    if (launch && !openCodeApiKey) {
-      const meta = PROVIDERS_META[openCodePk];
-      const envVar = meta?.envVar || "API key";
-      w(`\n${YELLOW} ! Missing ${meta?.name || openCodePk} API key (${envVar}).${R}\n`);
-      if (notice) w(`${notice}\n`);
-      const addKey = await promptYesNoFromTarget(
-        `${D}   Add API key now? (Y/n, default: Y): ${R}`,
-        true,
-      );
-      if (addKey) {
-        openApiKeyEditorFromMain(openCodePk);
-        return;
-      }
-      tNotice = `${YELLOW} Launch cancelled. Set ${envVar} in Settings (P), then retry.${R}`;
-      renderWithAuthority("target-prompt");
-      return;
-    }
-
-    if (launch && !isOpenCodeInstalled()) {
-      cleanup();
-      const installed = await promptInstallOpenCode();
-      if (!installed) {
-        process.exit(0);
-      }
-    }
-
-    try {
-      if (notice) w(`\n${notice}\n`);
-      const writtenPath = writeOpenCode(
-        openCodeModel,
-        openCodePk,
-        openCodeApiKey,
-        {
-          persistApiKey: ALLOW_PLAINTEXT_KEY_EXPORT,
-        },
-      );
-      w(`\n${GREEN} ✓ OpenCode config written → ${writtenPath}${R}\n`);
-      if (launch) {
-        cleanup();
-        const launchEnv = buildOpenCodeLaunchEnv(openCodePk, openCodeApiKey);
-        const result = spawnSync("opencode", [], {
-          stdio: "inherit",
-          shell: true,
-          env: launchEnv,
-        });
-        const code = Number.isInteger(result.status) ? result.status : 1;
-        process.exit(code);
-      }
-      const authHint = getOpenCodeAuthHint(openCodePk, openCodeApiKey, {
-        launch,
-      });
-      if (authHint) w(`${authHint}\n`);
-      if (!launch && !isOpenCodeInstalled()) {
-        w(
-          `${YELLOW} ! opencode CLI is not installed. Install it to use this config.${R}\n`,
-        );
-      }
-    } catch (err) {
-      w(`\n${RED} ✗ ${err.message}${R}\n`);
-    }
-
-    setTimeout(
-      () => {
-        screen = "main";
-        renderWithAuthority("timed-return");
-      },
-      launch ? 2000 : 1400,
-    );
-    return;
-  }
-
-  renderWithAuthority("target-ui");
-}
 
 // ─── Raw input dispatcher ──────────────────────────────────────────────────────
 // Buffer escape sequences: if \x1b arrives alone, wait 50ms to see if [ follows.
@@ -1433,7 +1284,6 @@ function dispatch(ch) {
 
   if (screen === "main") handleMain(ch);
   else if (screen === "settings") handleSettings(ch);
-  else if (screen === "target") handleTarget(ch).catch(() => {});
 }
 
 // ─── Model management ──────────────────────────────────────────────────────────
