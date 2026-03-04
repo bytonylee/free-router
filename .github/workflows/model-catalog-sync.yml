@@ -89,7 +89,7 @@ jobs:
       - name: Create pull request
         id: cpr
         if: steps.changes.outputs.changed == 'true'
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           commit-message: "chore(models): sync NIM/OpenRouter/OpenCode catalogs"
           branch: chore/model-catalog-sync
