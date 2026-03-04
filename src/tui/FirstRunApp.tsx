@@ -69,30 +69,19 @@ export function FirstRunApp({
   }
 
   if (saving) {
-    const n = Object.keys(apiKeys).length;
     return (
       <Box flexDirection="column" paddingLeft={1}>
         <Text bold>frouter — Free Model Router</Text>
         <Box marginTop={1}>
-          {n > 0 ? (
-            <StatusMessage variant="success">
-              {n} key(s) configured. Starting frouter…
-            </StatusMessage>
-          ) : (
-            <StatusMessage variant="warning">
-              No keys configured. You can add them later with P in the main screen.
-            </StatusMessage>
-          )}
+          <StatusMessage variant="success">
+            {Object.keys(apiKeys).length} key(s) configured. Starting frouter…
+          </StatusMessage>
         </Box>
       </Box>
     );
   }
 
-  if (!currentMeta) {
-    // Shouldn't happen, but safety
-    onDone(apiKeys);
-    return null;
-  }
+  if (!currentMeta) return null;
 
   return (
     <Box flexDirection="column" paddingLeft={1}>

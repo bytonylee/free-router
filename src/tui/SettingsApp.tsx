@@ -17,6 +17,12 @@ export type SettingsResult = {
   config: any;
 };
 
+function formatPingResult(r: { code: string; ms?: number }): string {
+  const msPart = Number.isFinite(r?.ms) ? `${r.ms}ms ` : "";
+  const ok = r?.code === "200" || r?.code === "401";
+  return `${msPart}${r?.code || "ERR"} ${ok ? "\u2713" : "\u2717"}`;
+}
+
 export type SettingsAppProps = {
   config: any;
   providers: Record<string, ProviderMeta>;
@@ -52,8 +58,7 @@ export function SettingsApp({
   const [notice, setNotice] = useState("");
   const [noticeVariant, setNoticeVariant] = useState<"success" | "error" | "warning">("success");
   const [autoOpenedProviders, setAutoOpenedProviders] = useState<Record<string, boolean>>({});
-  const bootstrappedPingsRef = useRef(false);
-  const initializedEditModeRef = useRef(false);
+  const mountedRef = useRef(false);
   const autoOpenedOnSelectionRef = useRef<string>("");
 
   const currentMeta = providers[selectedPk];
@@ -61,12 +66,6 @@ export function SettingsApp({
   const showNotice = useCallback((msg: string, variant: "success" | "error" | "warning" = "success") => {
     setNotice(msg);
     setNoticeVariant(variant);
-  }, []);
-
-  const formatPingResult = useCallback((r: { code: string; ms?: number }) => {
-    const msPart = Number.isFinite(r?.ms) ? `${r.ms}ms ` : "";
-    const ok = r?.code === "200" || r?.code === "401";
-    return `${msPart}${r?.code || "ERR"} ${ok ? "\u2713" : "\u2717"}`;
   }, []);
 
   const runProviderPing = useCallback(
@@ -84,7 +83,7 @@ export function SettingsApp({
           setTestResults((prev) => ({ ...prev, [pk]: "ERR \u2717" }));
         });
     },
-    [config, formatPingResult, getApiKey, ping, providers],
+    [config, getApiKey, ping, providers],
   );
 
   const maybeAutoOpenSignup = useCallback(
@@ -102,19 +101,13 @@ export function SettingsApp({
   );
 
   useEffect(() => {
-    if (bootstrappedPingsRef.current) return;
-    bootstrappedPingsRef.current = true;
+    if (mountedRef.current) return;
+    mountedRef.current = true;
     for (const pk of pks) runProviderPing(pk);
-  }, [pks, runProviderPing]);
-
-  useEffect(() => {
-    if (initializedEditModeRef.current) return;
-    initializedEditModeRef.current = true;
     if (initialMode === "editKey" && selectedPk) {
       maybeAutoOpenSignup(selectedPk);
-      runProviderPing(selectedPk);
     }
-  }, [initialMode, maybeAutoOpenSignup, runProviderPing, selectedPk]);
+  }, [pks, runProviderPing, initialMode, maybeAutoOpenSignup, selectedPk]);
 
   useEffect(() => {
     if (!selectedPk || mode !== "navigate") return;
