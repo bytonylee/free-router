@@ -1389,7 +1389,7 @@ type UpdateInstallCommand = {
 
 function fetchLatestVersion(): Promise<string | null> {
   return new Promise((resolve) => {
-    const timeout = setTimeout(() => resolve(null), 3000);
+    const timeout = setTimeout(() => resolve(null), 1000);
     const getter = REGISTRY_URL.startsWith("http://") ? httpGet : httpsGet;
     const req = getter(
       REGISTRY_URL,
