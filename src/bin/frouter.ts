@@ -938,6 +938,12 @@ function openApiKeyEditorFromMain(providerKey?: string) {
 }
 
 async function openSettingsInk(initialMode: "navigate" | "editKey" = "navigate", providerKey?: string) {
+  // Detach main input handler immediately — before dynamic imports — so that
+  // dispatch() cannot silently drop keystrokes destined for the Ink subapp.
+  // Without this, input that arrives during the import gap is consumed by
+  // dispatch (screen is already "ink-subapp") and never reaches Ink.
+  process.stdin.removeListener("data", onData);
+
   const React = await import("react");
   const { SettingsApp } = await import("../tui/SettingsApp.js");
   const { runInkSubApp } = await import("../tui/ink-harness.js");
