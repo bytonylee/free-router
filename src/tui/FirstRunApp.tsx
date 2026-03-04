@@ -3,7 +3,7 @@
 
 import React, { useState } from "react";
 import { Text, Box, useInput } from "ink";
-import { Select, PasswordInput, Spinner, StatusMessage } from "@inkjs/ui";
+import { Select, PasswordInput, StatusMessage } from "@inkjs/ui";
 
 type ProviderMeta = {
   name: string;
@@ -138,7 +138,7 @@ export function FirstRunApp({
                   setError(checked.reason || "Invalid key");
                   return;
                 }
-                setApiKeys({ ...apiKeys, [currentPk]: checked.key! });
+                setApiKeys({ ...apiKeys, [currentPk]: checked.key });
                 setError("");
                 advanceProvider();
               }}

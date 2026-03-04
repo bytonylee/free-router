@@ -2,7 +2,6 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   chmodSync,
-  existsSync,
   mkdirSync,
   readFileSync,
   writeFileSync,
@@ -430,8 +429,8 @@ case "$1" in
     echo "$@" > "$HOME/update-invoked.log"
     # Simulate global install by updating package.json version to 1.1.11
     PKG="\${FROUTER_PKG_PATH}"
-    if [ -n "\$PKG" ]; then
-      sed 's/"version": *"[^"]*"/"version": "1.1.11"/' "\$PKG" > "\$PKG.tmp" && mv "\$PKG.tmp" "\$PKG"
+    if [ -n "$PKG" ]; then
+      sed 's/"version": *"[^"]*"/"version": "1.1.11"/' "$PKG" > "$PKG.tmp" && mv "$PKG.tmp" "$PKG"
     fi
     exit 0
     ;;

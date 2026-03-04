@@ -694,7 +694,7 @@ function resetSearchState() {
   scrollOff = 0;
 }
 
-function resetSettingsState() {
+function _resetSettingsState() {
   sEditing = false;
   sKeyBuf = "";
   sNotice = "";
@@ -824,7 +824,7 @@ async function promptYesNoFromTarget(question: string, defaultValue = false): Pr
   }
 }
 
-async function promptInstallOpenCode() {
+async function _promptInstallOpenCode() {
   w(`\n${YELLOW} ! opencode CLI is not installed.${R}\n`);
   const installers = detectAvailableInstallers();
   if (!installers.length) {
