@@ -36,10 +36,18 @@ export function FirstRunApp({
   const currentPk = pks[providerIdx];
   const currentMeta = currentPk ? providers[currentPk] : null;
 
-  // Allow Ctrl+C to exit
+  const hasAnyKey = Object.keys(apiKeys).length > 0;
+
+  // Allow Ctrl+C to exit only if at least one key is configured
   useInput((_input, key) => {
     if (key.ctrl && _input === "c") {
-      onDone(apiKeys);
+      if (hasAnyKey) {
+        onDone(apiKeys);
+      } else {
+        setError("At least one API key is required to use frouter.");
+        setProviderIdx(0);
+        setStep("choose");
+      }
     }
   });
 
@@ -47,6 +55,11 @@ export function FirstRunApp({
     setError("");
     if (providerIdx + 1 < pks.length) {
       setProviderIdx(providerIdx + 1);
+      setStep("choose");
+    } else if (Object.keys(apiKeys).length === 0) {
+      // No keys at all — force user to configure at least one
+      setError("At least one API key is required to use frouter.");
+      setProviderIdx(0);
       setStep("choose");
     } else {
       setSaving(true);
@@ -100,6 +113,9 @@ export function FirstRunApp({
                 { label: "Open browser + enter key", value: "open" },
                 { label: "Enter key manually", value: "manual" },
                 { label: "Skip this provider", value: "skip" },
+                ...(hasAnyKey
+                  ? [{ label: "Skip remaining setup →", value: "done" }]
+                  : []),
               ]}
               onChange={(val) => {
                 if (val === "open") {
@@ -107,6 +123,9 @@ export function FirstRunApp({
                   setStep("input");
                 } else if (val === "manual") {
                   setStep("input");
+                } else if (val === "done") {
+                  setSaving(true);
+                  setTimeout(() => onDone(apiKeys), 600);
                 } else {
                   advanceProvider();
                 }
