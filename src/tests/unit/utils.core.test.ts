@@ -217,9 +217,12 @@ test("tierColor returns yellow for A-family tiers", () => {
   assert.equal(tierColor("A-"), YELLOW);
 });
 
-test("tierColor returns red for B and C tiers", () => {
-  assert.equal(tierColor("B+"), RED);
-  assert.equal(tierColor("B"), RED);
+test("tierColor returns orange for B+ and B tiers", () => {
+  assert.equal(tierColor("B+"), ORANGE);
+  assert.equal(tierColor("B"), ORANGE);
+});
+
+test("tierColor returns red for C tier", () => {
   assert.equal(tierColor("C"), RED);
 });
 
@@ -227,8 +230,6 @@ test("tierColor returns red for unknown/null tier", () => {
   assert.equal(tierColor(null), RED);
   assert.equal(tierColor("?"), RED);
 });
-
-// ─── latColor ────────────────────────────────────────────────────────────────
 
 test("latColor returns green for < 500ms", () => {
   assert.equal(latColor(100), GREEN);
@@ -392,6 +393,18 @@ test("sortModels reverse direction (asc=false)", () => {
   const sorted = sortModels(models, "tier", false);
   assert.equal(sorted[0].tier, "B");
   assert.equal(sorted[1].tier, "S+");
+});
+
+test("sortModels uses model ID as stable tie-breaker for equal values", () => {
+  const models = [
+    { id: "z-model", tier: "A", providerKey: "x", pings: [] },
+    { id: "a-model", tier: "A", providerKey: "x", pings: [] },
+    { id: "m-model", tier: "A", providerKey: "x", pings: [] },
+  ];
+  const sorted = sortModels(models, "tier", true);
+  assert.equal(sorted[0].id, "a-model");
+  assert.equal(sorted[1].id, "m-model");
+  assert.equal(sorted[2].id, "z-model");
 });
 
 // ─── visLen ──────────────────────────────────────────────────────────────────

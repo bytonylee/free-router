@@ -41,6 +41,7 @@ import {
   TIER_CYCLE,
   pad,
   visLen,
+  EMOJI_RE,
   R,
   B,
   D,
@@ -277,6 +278,7 @@ function fullWidthLine(content, lastLine = false) {
 
 // Truncate a string with ANSI codes to at most `maxVis` visible columns.
 // Preserves escape sequences but stops emitting visible chars once the limit is reached.
+// Emoji are treated as 2 columns wide to prevent terminal line wrapping.
 function truncAnsi(s: string, maxVis: number): string {
   let vis = 0;
   let out = "";
@@ -293,9 +295,11 @@ function truncAnsi(s: string, maxVis: number): string {
       }
       out += s.slice(start, i);
     } else {
-      if (vis >= maxVis) break;
-      out += s[i];
-      vis++;
+      const ch = s[i];
+      const charWidth = EMOJI_RE.test(ch) ? 2 : 1;
+      if (vis + charWidth > maxVis) break;
+      out += ch;
+      vis += charWidth;
       i++;
     }
   }
@@ -330,6 +334,8 @@ function statusDot(model) {
       return `${GREEN}*${R}`;
     case "noauth":
       return `${YELLOW}!${R}`;
+    case "forbidden":
+      return `${RED}!${R}`;
     case "ratelimit":
       return `${ORANGE}~${R}`;
     case "unavailable":

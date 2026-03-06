@@ -6,7 +6,6 @@ import {
   copyFileSync,
   mkdirSync,
   existsSync,
-  chmodSync,
   statSync,
 } from "node:fs";
 import { homedir, platform } from "node:os";
@@ -60,7 +59,6 @@ function backupAndWriteJson(path, data) {
     copyFileSync(path, `${path}.backup-${ts}`);
   }
   writeFileSync(path, JSON.stringify(data, null, 2) + "\n", { mode: 0o600 });
-  chmodSync(path, 0o600);
 }
 
 function getProviderMeta(providerKey) {

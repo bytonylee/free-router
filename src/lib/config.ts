@@ -3,7 +3,6 @@ import {
   readFileSync,
   writeFileSync,
   existsSync,
-  chmodSync,
   copyFileSync,
 } from "node:fs";
 import { homedir } from "node:os";
@@ -60,11 +59,6 @@ export function loadConfig() {
     try {
       const backupPath = `${CONFIG_PATH}.corrupt-${Date.now()}`;
       copyFileSync(CONFIG_PATH, backupPath);
-      try {
-        chmodSync(backupPath, 0o600);
-      } catch {
-        /* best-effort */
-      }
       process.stderr.write(
         `Warning: malformed config at ${CONFIG_PATH}; backup saved to ${backupPath}\n`,
       );
@@ -79,11 +73,6 @@ export function saveConfig(config) {
   writeFileSync(CONFIG_PATH, JSON.stringify(config, null, 2) + "\n", {
     mode: 0o600,
   });
-  try {
-    chmodSync(CONFIG_PATH, 0o600);
-  } catch {
-    /* best-effort */
-  }
 }
 
 /**

@@ -219,6 +219,7 @@ export function getVerdict(model) {
 export function tierColor(tier) {
   if (tier === "S+" || tier === "S") return WHITE + B;
   if (tier?.startsWith("A")) return YELLOW;
+  if (tier === "B+" || tier === "B") return ORANGE;
   return RED;
 }
 
@@ -306,6 +307,8 @@ export function sortModels(models, col, asc = true) {
       default:
         cmp = cmpAvg(a, b);
     }
+    // Stable tie-breaking: models with equal primary key sort deterministically by ID.
+    if (cmp === 0) cmp = (a.id || "").localeCompare(b.id || "");
     return cmp * dir;
   });
 }
@@ -362,7 +365,7 @@ export function findBestModel(models) {
 // ─── String width (strips ANSI, counts emoji as 2 columns) ─────────────────────
 
 const ANSI_RE = /\x1b\[[0-9;]*m/g;
-const EMOJI_RE =
+export const EMOJI_RE =
   /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FE0F}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{200D}\u{20E3}\u{E0020}-\u{E007F}]/u;
 
 export function visLen(s) {
