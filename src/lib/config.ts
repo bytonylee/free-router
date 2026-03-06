@@ -1,10 +1,5 @@
 // src/lib/config.ts — BYOK key management, first-run wizard, config I/O
-import {
-  readFileSync,
-  writeFileSync,
-  existsSync,
-  copyFileSync,
-} from "node:fs";
+import { readFileSync, writeFileSync, existsSync, copyFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { execSync } from "node:child_process";

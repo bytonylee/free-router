@@ -138,7 +138,9 @@ export function assertModelMetricsInvariant(model: any): {
 } {
   if (!METRICS_CACHE_ENABLED) return { ok: true };
   const metrics = ensureMetrics(model);
-  const oracle = recomputeMetricsFromPings(Array.isArray(model.pings) ? model.pings : []);
+  const oracle = recomputeMetricsFromPings(
+    Array.isArray(model.pings) ? model.pings : [],
+  );
   if (!metrics) return { ok: false, reason: "metrics missing" };
   if (metrics.count !== oracle.count) {
     return {
@@ -184,8 +186,7 @@ export function getUptime(model) {
   }
   if (!model.pings.length) return 0;
   return Math.round(
-    (model.pings.filter(isReachablePing).length / model.pings.length) *
-      100,
+    (model.pings.filter(isReachablePing).length / model.pings.length) * 100,
   );
 }
 
@@ -196,7 +197,9 @@ export function getVerdict(model) {
   const last = model.pings.at(-1);
   const avg = getAvg(model);
   const metrics = ensureMetrics(model);
-  const everUp = metrics ? metrics.okCount > 0 : model.pings.some((p) => p.code === "200");
+  const everUp = metrics
+    ? metrics.okCount > 0
+    : model.pings.some((p) => p.code === "200");
 
   if (model.status === "ratelimit" || last?.code === "429")
     return "🔥 Overloaded";

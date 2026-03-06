@@ -719,22 +719,36 @@ function enterTargetPickerFromSelection() {
 async function launchOpenCodeDirect() {
   prepareForInkSubApp();
 
-  const { openCodeModel, openCodePk, openCodeApiKey, notice: resolveNotice } =
-    resolveOpenCodeApplySelection(selModel);
+  const {
+    openCodeModel,
+    openCodePk,
+    openCodeApiKey,
+    notice: resolveNotice,
+  } = resolveOpenCodeApplySelection(selModel);
   if (resolveNotice) w(resolveNotice + "\n");
 
   let launch = true;
 
   try {
-    const writtenPath = writeOpenCode(openCodeModel, openCodePk, openCodeApiKey, {
-      persistApiKey: ALLOW_PLAINTEXT_KEY_EXPORT,
-    });
+    const writtenPath = writeOpenCode(
+      openCodeModel,
+      openCodePk,
+      openCodeApiKey,
+      {
+        persistApiKey: ALLOW_PLAINTEXT_KEY_EXPORT,
+      },
+    );
     w(`${GREEN} \u2713 OpenCode config written \u2192 ${writtenPath}${R}\n`);
-    const authHint = getOpenCodeAuthHint(openCodePk, openCodeApiKey, { launch });
+    const authHint = getOpenCodeAuthHint(openCodePk, openCodeApiKey, {
+      launch,
+    });
     if (authHint) w(authHint + "\n");
   } catch (err: any) {
     w(`${RED} \u2717 OpenCode write failed: ${err.message}${R}\n`);
-    setTimeout(() => { restoreAfterInkSubApp("main"); restartLoop(); }, 1400);
+    setTimeout(() => {
+      restoreAfterInkSubApp("main");
+      restartLoop();
+    }, 1400);
     return;
   }
 
@@ -742,7 +756,9 @@ async function launchOpenCodeDirect() {
   if (launch && !openCodeApiKey) {
     const meta = PROVIDERS_META[openCodePk];
     const envVar = meta?.envVar || "API key";
-    w(`\n${YELLOW} ! Missing ${meta?.name || openCodePk} API key (${envVar}).${R}\n`);
+    w(
+      `\n${YELLOW} ! Missing ${meta?.name || openCodePk} API key (${envVar}).${R}\n`,
+    );
     const addKey = await promptYesNoFromTarget(
       `${D}   Add API key now? (Y/n, default: Y): ${R}`,
       true,
@@ -751,14 +767,21 @@ async function launchOpenCodeDirect() {
       openApiKeyEditorFromMain(openCodePk);
       return;
     }
-    w(`${YELLOW} Launch cancelled. Set ${envVar} in Settings (P), then retry.${R}\n`);
+    w(
+      `${YELLOW} Launch cancelled. Set ${envVar} in Settings (P), then retry.${R}\n`,
+    );
     launch = false;
   }
 
   if (launch) {
     if (!isOpenCodeInstalled()) {
-      w(`${YELLOW} ! opencode is not installed. Install from https://github.com/opencode-ai/opencode${R}\n`);
-      setTimeout(() => { restoreAfterInkSubApp("main"); restartLoop(); }, 1400);
+      w(
+        `${YELLOW} ! opencode is not installed. Install from https://github.com/opencode-ai/opencode${R}\n`,
+      );
+      setTimeout(() => {
+        restoreAfterInkSubApp("main");
+        restartLoop();
+      }, 1400);
       return;
     }
     const launchEnv = buildOpenCodeLaunchEnv(openCodePk, openCodeApiKey);
@@ -777,7 +800,6 @@ async function launchOpenCodeDirect() {
     restartLoop();
   }, 1400);
 }
-
 
 function resolveOpenCodeApplySelection(selectedModel) {
   const pk = selectedModel.providerKey;
@@ -821,7 +843,10 @@ function buildOpenCodeLaunchEnv(providerKey, apiKey) {
   return launchEnv;
 }
 
-async function promptYesNoFromTarget(question: string, defaultValue = false): Promise<boolean> {
+async function promptYesNoFromTarget(
+  question: string,
+  defaultValue = false,
+): Promise<boolean> {
   process.stdin.removeListener("data", onData);
   try {
     return await promptYesNo(question, defaultValue);
@@ -939,11 +964,15 @@ function openApiKeyEditorFromMain(providerKey?: string) {
   searchMode = false;
   screen = "ink-subapp";
   const pks = Object.keys(PROVIDERS_META);
-  const resolvedProviderKey = providerKey || pks[resolveQuickApiKeyProviderIndex()];
+  const resolvedProviderKey =
+    providerKey || pks[resolveQuickApiKeyProviderIndex()];
   void openSettingsInk("editKey", resolvedProviderKey);
 }
 
-async function openSettingsInk(initialMode: "navigate" | "editKey" = "navigate", providerKey?: string) {
+async function openSettingsInk(
+  initialMode: "navigate" | "editKey" = "navigate",
+  providerKey?: string,
+) {
   // Detach main input handler immediately — before dynamic imports — so that
   // dispatch() cannot silently drop keystrokes destined for the Ink subapp.
   // Without this, input that arrives during the import gap is consumed by
@@ -1170,7 +1199,6 @@ function handleSettings(ch) {
   renderWithAuthority("settings-ui");
 }
 
-
 // ─── Raw input dispatcher ──────────────────────────────────────────────────────
 // Buffer escape sequences: if \x1b arrives alone, wait 50ms to see if [ follows.
 let escBuf = "";
@@ -1365,9 +1393,15 @@ function restartLoop() {
 
 function prepareForInkSubApp() {
   process.stdin.removeListener("data", onData);
-  if (escTimer) { clearTimeout(escTimer); escTimer = null; }
+  if (escTimer) {
+    clearTimeout(escTimer);
+    escTimer = null;
+  }
   escBuf = "";
-  if (_renderTimer) { clearTimeout(_renderTimer); _renderTimer = null; }
+  if (_renderTimer) {
+    clearTimeout(_renderTimer);
+    _renderTimer = null;
+  }
   screen = "ink-subapp";
   stopPingLoop(pingRef);
   // Don't change raw mode — the harness manages stdin via a proxy stream.
@@ -1379,7 +1413,11 @@ function restoreAfterInkSubApp(returnScreen = "main") {
   // The harness manages stdin directly (proxy pattern), so process.stdin
   // is still in raw/flowing/data-listener mode from prepareForInkSubApp's teardown.
   // We just need to re-attach our handler and restore raw mode.
-  try { process.stdin.setRawMode(true); } catch { /* best-effort */ }
+  try {
+    process.stdin.setRawMode(true);
+  } catch {
+    /* best-effort */
+  }
   process.stdin.setEncoding("utf8");
   process.stdin.on("data", onData);
   process.stdin.resume();
@@ -1786,7 +1824,7 @@ async function main() {
       );
     });
 
-    Object.assign(config.apiKeys ??= {}, apiKeys);
+    Object.assign((config.apiKeys ??= {}), apiKeys);
     saveConfig(config);
   }
 
