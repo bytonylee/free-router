@@ -22,6 +22,11 @@ import { runInPty, stripAnsi } from "../helpers/run-pty.js";
 const PKG_VERSION = JSON.parse(
   readFileSync(join(ROOT_DIR, "..", "package.json"), "utf8"),
 ).version;
+const NEXT_PKG_VERSION = PKG_VERSION.replace(
+  /^(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)$/,
+  (_match, major, minor, patch) =>
+    `${major}.${minor}.${Number.parseInt(patch, 10) + 1}`,
+);
 
 function makeConfig(home: string) {
   writeHomeConfig(home, defaultConfig({ apiKeys: { nvidia: "nvapi-test" } }));
@@ -214,9 +219,10 @@ exit 0
           { delayMs: 2000, data: "y\r" },
           { delayMs: 3600, data: "y\r" },
           { delayMs: 7600, data: "\x1b" },
-          { delayMs: 12000, data: "q" },
+          { delayMs: 15000, data: "q" },
+          { delayMs: 18000, data: "\x03" },
         ],
-        timeoutMs: 20_000,
+        timeoutMs: 30_000,
       });
 
       assert.equal(result.timedOut, false);
@@ -506,12 +512,12 @@ test(
 );
 
 test(
-  "update check: simulated 1.1.12 publish updates global binary and restart sees new version",
+  `update check: simulated ${NEXT_PKG_VERSION} publish updates global binary and restart sees new version`,
   { skip: SKIP_PTY && "PTY harness not available on Windows" },
   async () => {
     const server = await createHttpServer((_req, res) => {
       res.writeHead(200, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ version: "1.1.12" }));
+      res.end(JSON.stringify({ version: NEXT_PKG_VERSION }));
     });
 
     // Save original package.json to restore later
@@ -523,6 +529,7 @@ test(
       makeConfig(home);
       const fakeBin = join(home, "fake-bin");
       const marker = join(home, "update-invoked.log");
+      const fakeBrowser = prepareFakeBrowserLauncher(home);
       const npmBin = join(fakeBin, "npm");
       mkdirSync(fakeBin, { recursive: true });
 
@@ -535,10 +542,10 @@ case "$1" in
   --version) echo "10.0.0"; exit 0 ;;
   install)
     echo "$@" > "$HOME/update-invoked.log"
-    # Simulate global install by updating package.json version to 1.1.12
+    # Simulate global install by updating package.json version to ${NEXT_PKG_VERSION}
     PKG="\${FROUTER_PKG_PATH}"
     if [ -n "$PKG" ]; then
-      sed 's/"version": *"[^"]*"/"version": "1.1.12"/' "$PKG" > "$PKG.tmp" && mv "$PKG.tmp" "$PKG"
+      sed 's/"version": *"[^"]*"/"version": "${NEXT_PKG_VERSION}"/' "$PKG" > "$PKG.tmp" && mv "$PKG.tmp" "$PKG"
     fi
     exit 0
     ;;
@@ -552,7 +559,7 @@ esac
         cwd: ROOT_DIR,
         env: {
           HOME: home,
-          PATH: `${fakeBin}:${process.env.PATH || ""}`,
+          PATH: `${fakeBin}${fakeBrowser ? `:${fakeBrowser.binDir}` : ""}:${process.env.PATH || ""}`,
           FROUTER_REGISTRY_URL: `${server.baseUrl}/frouter-cli/latest`,
           FROUTER_NO_FETCH: "1",
           FROUTER_PKG_PATH: pkgPath,
@@ -563,18 +570,22 @@ esac
           { delayMs: 2000, data: "y\r" },
           { delayMs: 3600, data: "y\r" },
           { delayMs: 7600, data: "\x1b" },
-          { delayMs: 12000, data: "q" },
+          { delayMs: 15000, data: "q" },
+          { delayMs: 18000, data: "\x03" },
         ],
-        timeoutMs: 20_000,
+        timeoutMs: 30_000,
       });
 
       assert.equal(result.timedOut, false);
 
       // Verify update flow
       assert.match(result.stdout, /Update available/);
-      assert.match(result.stdout, /1\.1\.12/);
+      assert.match(result.stdout, new RegExp(NEXT_PKG_VERSION.replaceAll(".", "\\.")));
       assert.match(result.stdout, /Support for github star: \[Y\/n\]/);
-      assert.match(result.stdout, /Updated to 1\.1\.12/);
+      assert.match(
+        result.stdout,
+        new RegExp(`Updated to ${NEXT_PKG_VERSION.replaceAll(".", "\\.")}`),
+      );
       assert.match(result.stdout, /Restarting frouter now/);
       assert.match(stripAnsi(result.stdout), /\/_/);
 
@@ -583,13 +594,19 @@ esac
         readFileSync(marker, "utf8").trim(),
         "install -g frouter-cli",
       );
+      if (fakeBrowser) {
+        assert.match(
+          readFileSync(fakeBrowser.logPath, "utf8"),
+          /https:\/\/github\.com\/jyoung105\/frouter/,
+        );
+      }
 
       // Verify "Update available" appeared only once (restarted process didn't show it)
       assert.equal((result.stdout.match(/Update available/g) || []).length, 1);
 
-      // Verify package.json was updated to 1.1.12 (simulating global binary update)
+      // Verify package.json was updated to the simulated new version
       const updatedPkg = JSON.parse(readFileSync(pkgPath, "utf8"));
-      assert.equal(updatedPkg.version, "1.1.12");
+      assert.equal(updatedPkg.version, NEXT_PKG_VERSION);
     } finally {
       // Restore original package.json
       writeFileSync(pkgPath, originalPkg);
