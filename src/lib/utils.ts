@@ -381,7 +381,10 @@ export function splitGraphemes(s) {
   const str = String(s);
   if (!str) return [];
   if (GRAPHEME_SEGMENTER) {
-    return Array.from(GRAPHEME_SEGMENTER.segment(str), ({ segment }) => segment);
+    return Array.from(
+      GRAPHEME_SEGMENTER.segment(str),
+      ({ segment }) => segment,
+    );
   }
   return Array.from(str);
 }
