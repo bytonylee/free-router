@@ -7,6 +7,7 @@ import {
   saveConfig,
   getApiKey,
   promptMasked,
+  runFirstRunWizard,
   PROVIDERS_META,
   validateProviderApiKey,
   openBrowser,
@@ -146,12 +147,15 @@ let sEditing = false;
 let sKeyBuf = "";
 let sTestRes = {};
 let sNotice = "";
+let sAutoOpenedPk = "";
 let pingRef = null;
 let userNavigated = false; // true once user actively moves cursor
 let autoSortPauseUntil = 0;
 const DEFAULT_USER_SCROLL_SORT_PAUSE_MS = 1500;
 let userScrollSortPauseMs = DEFAULT_USER_SCROLL_SORT_PAUSE_MS;
 let renderAuthorityViolations = 0;
+let starPromptHandledThisLaunch = false;
+let startupSearchRequestedThisLaunch = false;
 
 // ─── Geometry ──────────────────────────────────────────────────────────────────
 const DEFAULT_COLS = 80;
@@ -579,6 +583,7 @@ const ALLOWED_RENDER_REASONS = new Set([
   "main-input",
   "main-search",
   "main-sort",
+  "settings-open",
   "settings-ui",
   "settings-test",
   "settings-exit",
@@ -677,11 +682,38 @@ function resetSearchState() {
   scrollOff = 0;
 }
 
+function enterSearchMode() {
+  resetSearchState();
+  searchMode = true;
+  applyFilters();
+}
+
+function consumeStartupSearchRequestFromEnv(): boolean {
+  const requested = process.env[OPEN_SEARCH_ON_START_ENV] === "1";
+  delete process.env[OPEN_SEARCH_ON_START_ENV];
+  return requested;
+}
+
+function markStartupSearchRequested() {
+  startupSearchRequestedThisLaunch = true;
+}
+
+function handleGithubStarAccepted() {
+  starPromptHandledThisLaunch = true;
+  markStartupSearchRequested();
+  openBrowser(GITHUB_REPO_URL);
+}
+
+function handleGithubStarDeclined() {
+  starPromptHandledThisLaunch = true;
+}
+
 function _resetSettingsState() {
   sEditing = false;
   sKeyBuf = "";
   sNotice = "";
   sTestRes = {};
+  sAutoOpenedPk = "";
 }
 
 function enterTargetPickerFromSelection() {
@@ -939,52 +971,32 @@ function resolveQuickApiKeyProviderIndex() {
 
 function openApiKeyEditorFromMain(providerKey?: string) {
   searchMode = false;
-  screen = "ink-subapp";
   const pks = Object.keys(PROVIDERS_META);
   const resolvedProviderKey =
     providerKey || pks[resolveQuickApiKeyProviderIndex()];
-  void openSettingsInk("editKey", resolvedProviderKey);
+  _resetSettingsState();
+  sCursor = Math.max(0, pks.indexOf(resolvedProviderKey));
+  screen = "settings";
+  sEditing = true;
+
+  const meta = PROVIDERS_META[resolvedProviderKey];
+  if (meta?.signupUrl && !getApiKey(config, resolvedProviderKey)) {
+    openBrowser(meta.signupUrl);
+    sNotice = `${D}Opened ${meta.name} key page in browser${R}`;
+  }
+
+  renderWithAuthority("settings-open");
 }
 
-async function openSettingsInk(
-  initialMode: "navigate" | "editKey" = "navigate",
-  providerKey?: string,
-) {
-  // Detach main input handler immediately — before dynamic imports — so that
-  // dispatch() cannot silently drop keystrokes destined for the Ink subapp.
-  // Without this, input that arrives during the import gap is consumed by
-  // dispatch (screen is already "ink-subapp") and never reaches Ink.
-  process.stdin.removeListener("data", onData);
+function maybeAutoOpenSettingsSignup(providerKey: string) {
+  if (!providerKey || sAutoOpenedPk === providerKey) return;
 
-  const React = await import("react");
-  const { SettingsApp } = await import("../tui/SettingsApp.js");
-  const { runInkSubApp } = await import("../tui/ink-harness.js");
+  const meta = PROVIDERS_META[providerKey];
+  if (!meta?.signupUrl || getApiKey(config, providerKey)) return;
 
-  const result = await runInkSubApp<{ config: any }>(
-    (resolve) =>
-      React.createElement(SettingsApp, {
-        config,
-        providers: PROVIDERS_META,
-        getApiKey,
-        validateKey: validateProviderApiKey,
-        saveConfig,
-        ping,
-        openBrowser,
-        initialMode,
-        initialProvider: providerKey,
-        onDone: resolve,
-      }),
-    {
-      beforeMount: () => prepareForInkSubApp(),
-      afterUnmount: () => restoreAfterInkSubApp("main"),
-    },
-  );
-
-  config = result.config;
-  void refreshModels().then(() => {
-    restartLoop();
-    renderWithAuthority("refresh-complete");
-  });
+  openBrowser(meta.signupUrl);
+  sAutoOpenedPk = providerKey;
+  sNotice = `${D}Opened ${meta.name} key page in browser${R}`;
 }
 
 function handleMain(ch) {
@@ -1035,15 +1047,15 @@ function handleMain(ch) {
 
   // Actions
   else if (ch === "/") {
-    resetSearchState();
-    searchMode = true;
-    applyFilters();
+    enterSearchMode();
   } else if (ch === "\r") {
     enterTargetPickerFromSelection();
   } else if (ch === "p" || ch === "P") {
     searchMode = false;
-    screen = "ink-subapp";
-    void openSettingsInk("navigate");
+    _resetSettingsState();
+    screen = "settings";
+    maybeAutoOpenSettingsSignup(Object.keys(PROVIDERS_META)[sCursor] || "");
+    renderWithAuthority("settings-open");
     return;
   } else if (ch === "a" || ch === "A") {
     openApiKeyEditorFromMain();
@@ -1138,10 +1150,12 @@ function handleSettings(ch) {
       renderWithAuthority("refresh-complete");
     });
     return;
-  } else if (ch === UP) {
+  } else if (ch === UP || ch === "k" || ch === "K") {
     sCursor = Math.max(0, sCursor - 1);
-  } else if (ch === DOWN) {
+    maybeAutoOpenSettingsSignup(pks[sCursor]);
+  } else if (ch === DOWN || ch === "j" || ch === "J") {
     sCursor = Math.min(pks.length - 1, sCursor + 1);
+    maybeAutoOpenSettingsSignup(pks[sCursor]);
   } else if (ch === " ") {
     config.providers ??= {};
     config.providers[currentPk] ??= {};
@@ -1407,7 +1421,9 @@ const REGISTRY_URL =
   process.env.FROUTER_REGISTRY_URL ||
   "https://registry.npmjs.org/frouter-cli/latest";
 const UPDATE_SKIP_ONCE_ENV = "FROUTER_SKIP_UPDATE_ONCE";
+const OPEN_SEARCH_ON_START_ENV = "FROUTER_OPEN_SEARCH_ON_START";
 const UPDATE_PACKAGE_NAME = "frouter-cli";
+const GITHUB_REPO_URL = "https://github.com/jyoung105/frouter";
 
 type UpdateInstallCommand = {
   bin: string;
@@ -1485,6 +1501,10 @@ function promptYesNo(question: string, defaultValue = false): Promise<boolean> {
     }
     process.stdin.on("data", handler);
   });
+}
+
+function promptGithubStarSupport(): Promise<boolean> {
+  return promptYesNo(`${D}  Support for github star: [Y/n] ${R}`, true);
 }
 
 const UPDATE_BAR_WIDTH = 24;
@@ -1597,10 +1617,10 @@ function detectUpdateInstallCommand(): UpdateInstallCommand | null {
   return null;
 }
 
-function restartAfterUpdate(): boolean {
+function restartAfterUpdate(extraEnv: NodeJS.ProcessEnv = {}): boolean {
   const restarted = spawnSync(process.execPath, process.argv.slice(1), {
     stdio: "inherit",
-    env: { ...process.env, [UPDATE_SKIP_ONCE_ENV]: "1" },
+    env: { ...process.env, [UPDATE_SKIP_ONCE_ENV]: "1", ...extraEnv },
   });
   if (restarted.error) return false;
   if (restarted.signal) process.exit(1);
@@ -1688,10 +1708,18 @@ async function checkForUpdate(): Promise<void> {
     if (!command) throw new Error("no supported updater");
     const ok = await runGlobalUpdate(command);
     if (!ok) throw new Error("update command failed");
+    if (!starPromptHandledThisLaunch) {
+      const support = await promptGithubStarSupport();
+      if (support) handleGithubStarAccepted();
+      else handleGithubStarDeclined();
+    }
     process.stdout.write(
       `${GREEN}  \u2713 Updated to ${latest}. Restarting frouter now...${R}\n\n`,
     );
-    if (restartAfterUpdate()) return;
+    const restartEnv = startupSearchRequestedThisLaunch
+      ? { [OPEN_SEARCH_ON_START_ENV]: "1" }
+      : {};
+    if (restartAfterUpdate(restartEnv)) return;
     process.stdout.write(
       `${YELLOW}  ! Update finished, but restart failed. Run frouter manually to use ${latest}.${R}\n\n`,
     );
@@ -1782,27 +1810,15 @@ async function main() {
   userScrollSortPauseMs = resolveUserScrollSortPauseMs(config);
 
   if (!Object.keys(config.apiKeys || {}).length && process.stdin.isTTY) {
-    const React = await import("react");
-    const { render: inkRender } = await import("ink");
-    const { FirstRunApp } = await import("../tui/FirstRunApp.js");
-    const { openBrowser } = await import("../lib/config.js");
-
-    const apiKeys = await new Promise<Record<string, string>>((done) => {
-      const instance = inkRender(
-        React.createElement(FirstRunApp, {
-          providers: PROVIDERS_META,
-          validateKey: validateProviderApiKey,
-          openBrowser,
-          onDone: (keys: Record<string, string>) => {
-            instance.unmount();
-            done(keys);
-          },
-        }),
-      );
-    });
-
-    Object.assign((config.apiKeys ??= {}), apiKeys);
-    saveConfig(config);
+    config = await runFirstRunWizard(config);
+    if (
+      Object.keys(config.apiKeys || {}).length &&
+      !starPromptHandledThisLaunch
+    ) {
+      const support = await promptGithubStarSupport();
+      if (support) handleGithubStarAccepted();
+      else handleGithubStarDeclined();
+    }
   }
 
   await checkForUpdate();
@@ -1828,6 +1844,10 @@ async function main() {
 
   renderWithAuthority("startup"); // show loading state immediately
   await refreshModels();
+  const shouldOpenSearch =
+    consumeStartupSearchRequestFromEnv() || startupSearchRequestedThisLaunch;
+  startupSearchRequestedThisLaunch = false;
+  if (shouldOpenSearch) enterSearchMode();
   restartLoop();
   renderWithAuthority("refresh-complete");
 }
