@@ -88,7 +88,17 @@ const tiers = ['All', 'S+', 'S', 'A+', 'A', 'A-', 'B+', 'B', 'C'];
         <div class="spacer"></div>
 
         <div class="line links">
-          <a href="https://github.com/jyoung105/frouter" target="_blank" rel="noopener">[GitHub]</a>
+          <a href="https://github.com/jyoung105/frouter" target="_blank" rel="noopener" class="github-cta">
+            <span class="github-cta-icon" aria-hidden="true">
+              <svg viewBox="0 0 16 16" focusable="false">
+                <path
+                  d="M8 0C3.58 0 0 3.67 0 8.19c0 3.61 2.29 6.68 5.47 7.76.4.08.55-.18.55-.39 0-.19-.01-.82-.01-1.48-2.01.38-2.53-.5-2.69-.96-.09-.24-.48-.96-.82-1.15-.28-.15-.68-.54-.01-.55.63-.01 1.08.59 1.23.84.72 1.23 1.87.88 2.33.67.07-.53.28-.88.5-1.08-1.78-.21-3.64-.92-3.64-4.09 0-.9.31-1.63.82-2.2-.08-.21-.36-1.05.08-2.19 0 0 .67-.22 2.2.84a7.42 7.42 0 0 1 4 0c1.53-1.06 2.2-.84 2.2-.84.44 1.14.16 1.98.08 2.19.51.57.82 1.29.82 2.2 0 3.18-1.87 3.88-3.65 4.09.29.25.54.74.54 1.5 0 1.08-.01 1.95-.01 2.22 0 .22.14.48.55.39A8.2 8.2 0 0 0 16 8.19C16 3.67 12.42 0 8 0Z"
+                />
+              </svg>
+            </span>
+            <span class="github-cta-text">Give the star</span>
+            <span class="github-cta-star" aria-hidden="true">✦</span>
+          </a>
         </div>
 
         <div class="spacer"></div>
@@ -282,45 +292,104 @@ const tiers = ['All', 'S+', 'S', 'A+', 'A', 'A-', 'B+', 'B', 'C'];
 
   .install-cmd {
     flex: 1;
+    min-width: 0;
   }
 
   .copy-btn {
+    appearance: none;
     background: none;
-    border: 1px solid #333;
-    color: #555;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.75rem;
-    padding: 0.1em 0.5em;
-    border-radius: 3px;
+    border: 0;
+    color: #6b7280;
+    font: inherit;
+    line-height: inherit;
+    padding: 0;
     cursor: pointer;
-    transition: color 0.2s, border-color 0.2s;
+    text-decoration: none;
+    text-underline-offset: 0.18em;
+    outline: none;
+    transition: color 0.2s, text-decoration-color 0.2s, outline-color 0.2s;
     white-space: nowrap;
     flex-shrink: 0;
   }
 
   .copy-btn:hover {
-    color: #00ff41;
-    border-color: #00ff41;
+    color: #f5f5f5;
+    text-decoration: underline;
   }
 
   .copy-btn.copied {
     color: #28c840;
-    border-color: #28c840;
+    text-decoration: none;
+  }
+
+  .copy-btn:focus-visible {
+    color: #f5f5f5;
+    text-decoration: underline;
+    outline: 1px solid #f4b940;
+    outline-offset: 0.18em;
   }
 
   .spacer {
     height: 1em;
   }
 
-  .links a {
-    color: #00ff41;
+  .github-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45em;
+    background: none;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    color: #f3f4f6;
     text-decoration: none;
-    border-bottom: 1px dashed #00ff4180;
-    transition: border-color 0.2s;
+    text-underline-offset: 0.18em;
+    white-space: nowrap;
+    line-height: inherit;
+    outline: none;
+    transition: color 0.2s, text-decoration-color 0.2s, outline-color 0.2s;
   }
 
-  .links a:hover {
-    border-color: #00ff41;
+  .github-cta:hover {
+    color: #fbfdff;
+    text-decoration: underline;
+  }
+
+  .github-cta:focus-visible {
+    color: #fbfdff;
+    text-decoration: underline;
+    outline: 1px solid #f4b940;
+    outline-offset: 0.18em;
+  }
+
+  .github-cta-icon {
+    display: inline-flex;
+    align-items: center;
+    color: #8b949e;
+    flex-shrink: 0;
+  }
+
+  .github-cta-icon svg {
+    width: 1em;
+    height: 1em;
+    display: block;
+    fill: currentColor;
+  }
+
+  .github-cta-text {
+    color: inherit;
+  }
+
+  .github-cta-star {
+    color: #f4b940;
+    font-size: 0.88em;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  .github-cta:hover .github-cta-star,
+  .github-cta:focus-visible .github-cta-star {
+    color: #ffd166;
   }
 
   .cursor {
