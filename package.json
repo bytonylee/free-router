@@ -10,8 +10,8 @@
   "scripts": {
     "build": "tsc -p tsconfig.json && cp data/model-rankings.json data/model-support.json dist/",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "lint": "eslint src --ext .ts,.tsx --max-warnings=0",
-    "lint:fix": "eslint src --ext .ts,.tsx --fix",
+    "lint": "eslint src --max-warnings=0",
+    "lint:fix": "eslint src --fix",
     "pretest": "npm run build",
     "test": "node --test dist/tests/unit/*.test.js dist/tests/integration/*.test.js dist/tests/security/*.test.js",
     "test:perf": "npm run build && node --expose-gc --test dist/tests/perf/*.perf.test.js",
