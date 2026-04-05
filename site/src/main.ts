@@ -1,3 +1,28 @@
+// ─── Terminal Header Animation ───────────────────────────────────────────────
+
+function runTerminalHeaderAnimation() {
+  const typingCmd = document.getElementById('typing-cmd');
+  const typingCursor = document.getElementById('typing-cursor');
+  const asciiArt = document.getElementById('ascii-art');
+  if (!typingCmd || !typingCursor || !asciiArt) return;
+
+  const command = 'npx @jyoung105/frouter-cli@latest';
+  let i = 0;
+
+  const typeInterval = setInterval(() => {
+    if (i < command.length) {
+      typingCmd.textContent += command[i];
+      i++;
+    } else {
+      clearInterval(typeInterval);
+      typingCursor.style.display = 'none';
+      asciiArt.classList.add('visible');
+    }
+  }, 35);
+}
+
+runTerminalHeaderAnimation();
+
 // ─── Tab Switching ───────────────────────────────────────────────────────────
 
 function activateTab(index: number) {

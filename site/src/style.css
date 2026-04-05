@@ -363,6 +363,43 @@ main {
   height: 1em;
 }
 
+/* ─── Terminal Header (ASCII banner) ─────────────────────── */
+.terminal-header {
+  margin-bottom: 1em;
+}
+
+.terminal-header .typing-cursor {
+  animation: blink 1.25s step-end infinite;
+  color: #fafafa;
+}
+
+.ascii-art {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: min(0.5rem, 1.7vw);
+  line-height: 1.2;
+  color: #fafafa;
+  margin: 1.5em 0 0.5em;
+  opacity: 0;
+  transition: opacity 0.5s ease-out;
+  overflow: hidden;
+}
+
+.ascii-art.visible {
+  opacity: 1;
+}
+
+@media (min-width: 768px) {
+  .ascii-art {
+    font-size: min(0.55rem, 1.8vw);
+  }
+}
+
+@media (min-width: 1024px) {
+  .ascii-art {
+    font-size: 0.5rem;
+  }
+}
+
 /* ─── GitHub CTA ───────────────────────────────────────────── */
 .github-cta {
   display: inline-flex;
