@@ -115,8 +115,8 @@ if (HELP) {
     ↑↓ / j k     Navigate models
     PgUp / PgDn   Jump one page
     g / G          Jump to top / bottom
-    /              Search (type to filter, ESC to clear)
-    Enter          Select model → choose target (OpenClaw currently disabled)
+    /              Search (type to filter, Enter opens opencode, ESC to clear)
+    Enter          Save config + open current model in opencode
     A              Quick API key add/change (opens key editor)
     P              Settings (edit keys, toggle providers, test)
     T              Cycle tier filter
@@ -144,7 +144,7 @@ let searchQuery = "";
 let searchTabScrolled = false;
 let tierFilter = "All";
 let pingMs = 2000;
-let screen = "main"; // 'main' | 'settings' | 'target' | 'help'
+let screen = "main"; // 'main' | 'settings' | 'help' | 'ink-subapp'
 let sCursor = 0;
 let selModel: Model | null = null;
 let sEditing = false;
@@ -480,7 +480,7 @@ function renderMain() {
   }
 
   // Footer
-  const footer = ` ↑↓/jk:nav  /:focus model search  Enter:target (search Enter=apply OpenCode)  A:api key  P:settings  T:tier  ?:help  0-9:sort  q:quit `;
+  const footer = ` ↑↓/jk:nav  /:focus model search  Enter:open opencode  A:api key  P:settings  T:tier  ?:help  0-9:sort  q:quit `;
   out += fullWidthBar(footer, INVERT, true);
   w(out);
 }
@@ -504,8 +504,8 @@ function renderHelp() {
       `  g           Jump to top\n` +
       `  G           Jump to bottom\n\n` +
       `${B}  Actions${R}\n` +
-      `  Enter       Select model → target picker (OpenCode / OpenClaw disabled)\n` +
-      `  /           Focus model search (filter by model name; Enter applies to OpenCode only)\n` +
+      `  Enter       Save config + open current model in opencode\n` +
+      `  /           Focus model search (filter by model name; Enter opens opencode)\n` +
       `  A           Quick API key add/change (opens key editor)\n` +
       `  R           Change API key (auto-detects expired provider)\n` +
       `  T           Cycle tier filter (All → S+ → S → …)\n` +
@@ -515,11 +515,6 @@ function renderHelp() {
       `${B}  Sort (press key to sort, press again to reverse)${R}\n` +
       sortLines +
       "\n" +
-      `\n${B}  Target Picker${R}\n` +
-      `  Enter       Save config + open selected target (OpenCode only)\n` +
-      `  G           Same as Enter\n` +
-      `  S           Save config only\n` +
-      `  ESC         Cancel\n` +
       `\n${INVERT} Press any key to close ${R}\n`,
   );
 }
@@ -737,26 +732,14 @@ async function launchOpenCodeDirect() {
     openCodeModel,
     openCodePk,
     openCodeApiKey,
-    notice: resolveNotice,
   } = resolveOpenCodeApplySelection(selModel);
-  if (resolveNotice) w(resolveNotice + "\n");
 
   let launch = true;
 
   try {
-    const writtenPath = writeOpenCode(
-      openCodeModel,
-      openCodePk,
-      openCodeApiKey,
-      {
-        persistApiKey: ALLOW_PLAINTEXT_KEY_EXPORT,
-      },
-    );
-    w(`${GREEN} \u2713 OpenCode config written \u2192 ${writtenPath}${R}\n`);
-    const authHint = getOpenCodeAuthHint(openCodePk, openCodeApiKey, {
-      launch,
+    writeOpenCode(openCodeModel, openCodePk, openCodeApiKey, {
+      persistApiKey: ALLOW_PLAINTEXT_KEY_EXPORT,
     });
-    if (authHint) w(authHint + "\n");
   } catch (err: any) {
     w(`${RED} \u2717 OpenCode write failed: ${err.message}${R}\n`);
     setTimeout(() => {
@@ -830,17 +813,6 @@ function resolveOpenCodeApplySelection(selectedModel: Model) {
     openCodeApiKey: apiKey,
     notice,
   };
-}
-
-function getOpenCodeAuthHint(providerKey: string, apiKey: string | null, { launch = false }: { launch?: boolean } = {}) {
-  const envVar = PROVIDERS_META[providerKey]?.envVar;
-  if (!envVar || ALLOW_PLAINTEXT_KEY_EXPORT) return "";
-  if (!apiKey) {
-    if (launch) return "";
-    return `${YELLOW} ! OpenCode auth missing: ${envVar}. Configure key in Settings (P) before launching.${R}`;
-  }
-  if (launch || process.env[envVar]) return "";
-  return `${YELLOW} ! OpenCode auth uses ${envVar}. Export it before launching opencode outside frouter.${R}`;
 }
 
 function buildOpenCodeLaunchEnv(providerKey: string, apiKey: string | null) {
@@ -919,43 +891,7 @@ async function _promptInstallOpenCode() {
 }
 
 function quickApplySelectionToTargets() {
-  if (!filtered.length) return false;
-  selModel = filtered[cursor];
-  searchMode = false;
-
-  const { openCodeModel, openCodePk, openCodeApiKey, notice } =
-    resolveOpenCodeApplySelection(selModel);
-
-  let ok = true;
-
-  try {
-    if (notice) w(`${notice}\n`);
-    const ocPath = writeOpenCode(openCodeModel, openCodePk, openCodeApiKey, {
-      persistApiKey: ALLOW_PLAINTEXT_KEY_EXPORT,
-    });
-    w(
-      `\n${GREEN} ✓ OpenCode model set → ${openCodePk}/${openCodeModel.id}${R}\n${D}   ${ocPath}${R}\n`,
-    );
-    const authHint = getOpenCodeAuthHint(openCodePk, openCodeApiKey);
-    if (authHint) w(`${authHint}\n`);
-    if (!isOpenCodeInstalled()) {
-      w(
-        `${YELLOW} ! opencode CLI is not installed. Install it to use this config.${R}\n`,
-      );
-    }
-  } catch (err: unknown) {
-    ok = false;
-    w(`\n${RED} ✗ OpenCode write failed: ${(err as Error).message}${R}\n`);
-  }
-
-  setTimeout(
-    () => {
-      screen = "main";
-      renderWithAuthority("timed-return");
-    },
-    ok ? 1400 : 2000,
-  );
-  return true;
+  return enterTargetPickerFromSelection();
 }
 
 function resolveQuickApiKeyProviderIndex() {

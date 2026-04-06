@@ -74,7 +74,7 @@ writeOpenClaw(orModel, 'openrouter', 'sk-or-demo');
 const SKIP = process.platform === "win32";
 
 test(
-  "interactive target picker confirm path (Enter) invokes opencode",
+  "pressing Enter on a model writes config and opens opencode directly",
   { skip: SKIP && "PTY harness uses `script`, unavailable on Windows" },
   async () => {
     const home = makeTempHome();
@@ -126,9 +126,7 @@ exit 0
           PATH: `${fakeBin}:${process.env.PATH ?? ""}`,
         },
         inputChunks: [
-          { delayMs: 850, data: "\r" }, // select highlighted model -> target screen
-          { delayMs: 1600, data: "\r" }, // select target OpenCode (default first option)
-          { delayMs: 2100, data: "\r" }, // select "Save + Launch" (default first option)
+          { delayMs: 850, data: "\r" }, // open opencode for highlighted model
         ],
         timeoutMs: 15_000,
       });
@@ -146,6 +144,7 @@ exit 0
       const openCode = readFileSync(openCodePath, "utf8");
       assert.match(openCode, /"model": "nvidia\//);
       const text = stripAnsi(result.stdout);
+      assert.doesNotMatch(text, /OpenCode config written/);
       assert.doesNotMatch(text, /OpenCode auth uses NVIDIA_API_KEY/);
     } finally {
       cleanupTempHome(home);
@@ -154,7 +153,7 @@ exit 0
 );
 
 test(
-  "interactive target launch asks confirmation when fallback provider key is missing and declines launch on 'n'",
+  "direct opencode launch asks confirmation when fallback provider key is missing and declines launch on escape",
   { skip: SKIP && "PTY harness uses `script`, unavailable on Windows" },
   async () => {
     const home = makeTempHome();
@@ -193,11 +192,9 @@ exit 0
         },
         inputChunks: [
           { delayMs: 900, data: "\x1b[B".repeat(10) }, // select stepfun-ai/step-3.5-flash (index 10)
-          { delayMs: 1500, data: "\r" }, // model -> target screen
-          { delayMs: 3500, data: "\r" }, // select target
-          { delayMs: 4500, data: "\r" }, // select "Save + Launch"
-          { delayMs: 6500, data: "\x1b" }, // ESC to decline add-key prompt
-          { delayMs: 8000, data: "q" }, // quit app
+          { delayMs: 1500, data: "\r" }, // open opencode for selected model
+          { delayMs: 3500, data: "\x1b" }, // ESC to decline add-key prompt
+          { delayMs: 5000, data: "q" }, // quit app
         ],
         timeoutMs: 15_000,
       });

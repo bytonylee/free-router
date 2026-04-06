@@ -512,7 +512,7 @@ test(
 );
 
 test(
-  "pressing Enter in search mode applies selected model to OpenCode only",
+  "pressing Enter in search mode opens opencode without terminal notices",
   { skip: SKIP && "PTY harness uses `script`, unavailable on Windows" },
   async () => {
     const home = makeTempHome();
@@ -528,9 +528,42 @@ test(
         }),
       );
 
+      const fakeBin = join(home, "fake-bin");
+      const marker = join(home, "opencode-launched.log");
+      mkdirSync(fakeBin, { recursive: true });
+      writeFileSync(
+        join(fakeBin, "opencode"),
+        `#!/bin/sh
+cfg="$HOME/.config/opencode/opencode.json"
+if [ ! -f "$cfg" ]; then
+  echo "missing-config" >> "${marker}"
+  exit 1
+fi
+if [ "$NVIDIA_API_KEY" != "nvapi-test" ]; then
+  echo "missing-env" >> "${marker}"
+  exit 1
+fi
+if [ "$OPENCODE_CLI_RUN_MODE" != "true" ]; then
+  echo "missing-cli-run-mode" >> "${marker}"
+  exit 1
+fi
+if grep -q '"model": "nvidia/' "$cfg"; then
+  echo "launched" >> "${marker}"
+  exit 0
+fi
+echo "bad-config" >> "${marker}"
+exit 0
+`,
+        { mode: 0o755 },
+      );
+
       const result = await runInPty(process.execPath, [BIN_PATH], {
         cwd: ROOT_DIR,
-        env: { HOME: home, FROUTER_NO_FETCH: "1" },
+        env: {
+          HOME: home,
+          FROUTER_NO_FETCH: "1",
+          PATH: `${fakeBin}:${process.env.PATH ?? ""}`,
+        },
         inputChunks: [
           { delayMs: 850, data: "/" },
           { delayMs: 980, data: "l" },
@@ -538,8 +571,7 @@ test(
           { delayMs: 1240, data: "a" },
           { delayMs: 1370, data: "m" },
           { delayMs: 1500, data: "a" },
-          { delayMs: 1700, data: "\r" }, // apply directly from search mode
-          { delayMs: 2500, data: "q" }, // exit app
+          { delayMs: 1700, data: "\r" }, // open opencode from search mode
         ],
         timeoutMs: 12_000,
       });
@@ -549,6 +581,8 @@ test(
 
       const openCodePath = join(home, ".config", "opencode", "opencode.json");
       const openClawPath = join(home, ".openclaw", "openclaw.json");
+      assert.equal(existsSync(marker), true);
+      assert.match(readFileSync(marker, "utf8"), /launched/);
       assert.equal(existsSync(openCodePath), true);
       assert.equal(existsSync(openClawPath), false);
       assert.match(
@@ -561,9 +595,9 @@ test(
       );
 
       const text = stripAnsi(result.stdout);
-      assert.match(text, /OpenCode model set/);
-      assert.match(text, /OpenCode auth uses NVIDIA_API_KEY/);
-      assert.doesNotMatch(text, /OpenClaw model set/);
+      assert.doesNotMatch(text, /OpenCode model set/);
+      assert.doesNotMatch(text, /OpenCode config written/);
+      assert.doesNotMatch(text, /OpenCode auth uses NVIDIA_API_KEY/);
     } finally {
       cleanupTempHome(home);
     }

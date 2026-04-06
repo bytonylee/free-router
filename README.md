@@ -45,8 +45,8 @@ restarts automatically, so you can continue without running `frouter` again.
 
 1. **First-run onboarding wizard**
    Launch `frouter`, open provider websites in-browser from the wizard, paste keys, and start.
-2. **Interactive model search + apply**
-   Use `/` to filter models, then `Enter` to apply directly to OpenCode config.
+2. **Interactive model search + launch**
+   Use `/` to filter models, then `Enter` to update OpenCode config and open `opencode`.
 3. **Quick API key rescue from main screen**
    Press `A` (or `R` for expired/missing provider) to jump into key editing with auto browser opening for missing keys.
 4. **Full settings workflow**
@@ -140,8 +140,8 @@ Search bar provider badges:
 
 | Key            | Action                                                            |
 | -------------- | ----------------------------------------------------------------- |
-| `Enter`        | Select model → target picker (OpenCode / OpenClaw)                |
-| `/`            | Search / filter models (Enter in search = apply to OpenCode only) |
+| `Enter`        | Save config + open current model in `opencode`                    |
+| `/`            | Search / filter models (Enter in search = open `opencode`)        |
 | `A`            | Quick API key add/change (opens key editor in Settings)           |
 | `R`            | Edit API key for likely expired/missing provider                  |
 | `T`            | Cycle tier filter: All → S+ → S → A+ → …                          |
@@ -165,16 +165,9 @@ Search bar provider badges:
 | `8` | Verdict            |
 | `9` | AA Intelligence    |
 
-### Target picker
+### OpenCode handoff
 
-After pressing `Enter` on a model:
-
-| Key           | Action                             |
-| ------------- | ---------------------------------- |
-| `↑` / `↓`     | Navigate (OpenCode CLI / OpenClaw) |
-| `Enter` / `G` | Write config + launch tool         |
-| `S`           | Write config only (no launch)      |
-| `ESC`         | Cancel                             |
+Pressing `Enter` on a model writes the OpenCode config and immediately opens `opencode`.
 
 If OpenCode fallback remaps the provider (for example NIM Stepfun → OpenRouter)
 and the effective provider key is missing, frouter asks:
