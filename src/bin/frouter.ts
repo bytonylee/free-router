@@ -132,7 +132,11 @@ if (HELP) {
 }
 
 // ─── State ─────────────────────────────────────────────────────────────────────
-let config: FrouterConfig = { apiKeys: {}, providers: {}, ui: { scrollSortPauseMs: 1500 } };
+let config: FrouterConfig = {
+  apiKeys: {},
+  providers: {},
+  ui: { scrollSortPauseMs: 1500 },
+};
 let models: Model[] = [];
 let filtered: Model[] = [];
 let cursor = 0;
@@ -152,7 +156,10 @@ let sKeyBuf = "";
 let sTestRes: Record<string, string> = {};
 let sNotice = "";
 let sAutoOpenedPk = "";
-let pingRef: { running: boolean; timer: ReturnType<typeof setTimeout> | null } | null = null;
+let pingRef: {
+  running: boolean;
+  timer: ReturnType<typeof setTimeout> | null;
+} | null = null;
 let userNavigated = false; // true once user actively moves cursor
 let autoSortPauseUntil = 0;
 const DEFAULT_USER_SCROLL_SORT_PAUSE_MS = 1500;
@@ -244,7 +251,12 @@ function sortArrow(colName: string) {
   return sortAsc ? "▲" : "▼";
 }
 
-function colHdr(label: string, colName: string, width: number, rightAlign = false) {
+function colHdr(
+  label: string,
+  colName: string,
+  width: number,
+  rightAlign = false,
+) {
   const arrow = sortArrow(colName);
   const text = arrow ? `${label}${arrow}` : label;
   return rightAlign ? text.padStart(width) : text.padEnd(width);
@@ -389,6 +401,22 @@ function renderMain() {
     tierFilter !== "All" ? `${YELLOW}tier:${tierFilter}${R}  ` : "";
   const stats = `${D}${filtered.length}/${models.length} models  ${pingMs / 1000}s${R}`;
 
+  // ── Loading splash — skip all chrome until data is ready ──────────────────
+  const isLoading = filtered.length === 0 && models.length === 0;
+  if (isLoading) {
+    const splashLines = [
+      ...startupPixelTitleLines(),
+      `${D}  FROUTER · Free Model Router${R}`,
+      `${D}  Loading models…${R}`,
+    ];
+    const topPad = Math.max(0, Math.floor((r - splashLines.length) / 3));
+    let out = (FORCE_FRAME_CLEAR ? CLEAR : CURSOR_HOME) + HIDEC + "\x1b[J";
+    for (let i = 0; i < topPad; i++) out += "\n";
+    for (const line of splashLines) out += truncAnsi(line, c) + "\n";
+    w(out);
+    return;
+  }
+
   let out = (FORCE_FRAME_CLEAR ? CLEAR : CURSOR_HOME) + HIDEC;
 
   // Header
@@ -409,17 +437,7 @@ function renderMain() {
     w(out);
     return;
   }
-  const isLoading = filtered.length === 0 && models.length === 0;
-  if (isLoading) {
-    const loadingLines = [
-      ...startupPixelTitleLines(),
-      `${D}  FROUTER · Free Model Router${R}`,
-      `${D}  Loading models…${R}`,
-    ];
-    for (let i = 0; i < tr; i++) {
-      out += truncAnsi(loadingLines[i] ?? "", c) + "\n";
-    }
-  } else {
+  {
     const showSearchPixelTitle =
       searchMode &&
       !searchTabScrolled &&
@@ -728,11 +746,8 @@ async function launchOpenCodeDirect() {
     return;
   }
 
-  const {
-    openCodeModel,
-    openCodePk,
-    openCodeApiKey,
-  } = resolveOpenCodeApplySelection(selModel);
+  const { openCodeModel, openCodePk, openCodeApiKey } =
+    resolveOpenCodeApplySelection(selModel);
 
   let launch = true;
 
@@ -1284,7 +1299,10 @@ async function refreshModels() {
     const existing = byKey.get(modelKey(m));
     if (!existing) return m;
     const preserved: Partial<Model> = {};
-    for (const k of PING_STATE_KEYS) (preserved as Record<string, unknown>)[k] = (existing as Record<string, unknown>)[k];
+    for (const k of PING_STATE_KEYS)
+      (preserved as Record<string, unknown>)[k] = (
+        existing as Record<string, unknown>
+      )[k];
     return { ...m, ...preserved };
   });
   applyFilters();
