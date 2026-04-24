@@ -127,7 +127,7 @@ export function UpdateApp({
   if (phase === "installing") {
     return (
       <Box flexDirection="column" paddingLeft={1}>
-        <Spinner label="Updating frouter-cli…" />
+        <Spinner label="Updating free-router…" />
         <Box marginTop={1}>
           <Text>  </Text>
           <ProgressBar value={progress} />
