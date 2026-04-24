@@ -223,7 +223,7 @@ function findFallbackModel(
 // ─── OpenCode ────────────────────────────────────────────────────────────────
 
 /**
- * Merge frouter provider block into OpenCode config and set active model.
+ * Merge free-router provider block into OpenCode config and set active model.
  * Preserves all existing keys (other providers, plugins, etc.).
  */
 export function writeOpenCode(
@@ -298,7 +298,7 @@ export function resolveOpenCodeSelection(
 // ─── OpenClaw ────────────────────────────────────────────────────────────────
 
 /**
- * Merge frouter config into OpenClaw JSON:
+ * Merge free-router config into OpenClaw JSON:
  *   - models.providers.<providerKey>
  *   - env.<PROVIDER>_API_KEY  (actual key value — OpenClaw's own design)
  *   - agents.defaults.model.primary
