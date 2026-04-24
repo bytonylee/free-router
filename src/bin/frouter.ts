@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// src/bin/frouter.ts — frouter main entry: TUI + --best mode
+// src/bin/free-router.ts — free-router main entry: TUI + --best mode
 // Zero dependencies — pure Node.js built-ins
 
 import {
@@ -54,6 +54,7 @@ import {
   WHITE,
   ORANGE,
   BG_SEL,
+  readEnv,
   type Model,
 } from "../lib/utils.js";
 import { spawn, spawnSync } from "node:child_process";
@@ -82,11 +83,16 @@ const BG_HDR = "\x1b[48;5;17m";
 const ALT_ON = "\x1b[?1049h";
 const ALT_OFF = "\x1b[?1049l";
 const ALLOW_PLAINTEXT_KEY_EXPORT =
-  process.env.FROUTER_EXPORT_PLAINTEXT_KEYS === "1";
-const FORCE_FRAME_CLEAR = process.env.FROUTER_TUI_FORCE_CLEAR === "1";
+  readEnv(
+    "FREE_ROUTER_EXPORT_PLAINTEXT_KEYS",
+    "FROUTER_EXPORT_PLAINTEXT_KEYS",
+  ) === "1";
+const FORCE_FRAME_CLEAR =
+  readEnv("FREE_ROUTER_TUI_FORCE_CLEAR", "FROUTER_TUI_FORCE_CLEAR") === "1";
 const STRICT_RENDER_AUTH =
   process.env.NODE_ENV === "test" ||
-  process.env.FROUTER_STRICT_RENDER_AUTH === "1";
+  readEnv("FREE_ROUTER_STRICT_RENDER_AUTH", "FROUTER_STRICT_RENDER_AUTH") ===
+    "1";
 
 // ─── Parse CLI args ────────────────────────────────────────────────────────────
 const argv = process.argv.slice(2);
@@ -95,15 +101,15 @@ const HELP = argv.includes("--help") || argv.includes("-h");
 const VERSION = argv.includes("--version") || argv.includes("-v");
 
 if (VERSION) {
-  console.log(`frouter ${PKG_VERSION}`);
+  console.log(`free-router ${PKG_VERSION}`);
   process.exit(0);
 }
 
 if (HELP) {
   console.log(`
-  frouter — Free Model Router
+  free-router — Free Model Router
 
-  Usage: frouter [flags]
+  Usage: free-router [flags]
 
   Flags:
     (none)    Interactive TUI — discover, compare, select
@@ -406,7 +412,7 @@ function renderMain() {
   if (isLoading) {
     const splashLines = [
       ...startupPixelTitleLines(),
-      `${D}  FROUTER · Free Model Router${R}`,
+      `${D}  FREE-ROUTER · Free Model Router${R}`,
       `${D}  Loading models…${R}`,
     ];
     const topPad = Math.max(0, Math.floor((r - splashLines.length) / 3) - 5);
@@ -420,7 +426,7 @@ function renderMain() {
   let out = (FORCE_FRAME_CLEAR ? CLEAR : CURSOR_HOME) + HIDEC;
 
   // Header
-  const hdrRaw = `${BG_HDR}${WHITE}${B} frouter ${R}  ${provStatus}${R}`;
+  const hdrRaw = `${BG_HDR}${WHITE}${B} free-router ${R}  ${provStatus}${R}`;
   out += fullWidthLine(hdrRaw) + "\n";
 
   // Search + stats bar
@@ -513,7 +519,7 @@ function renderHelp() {
   w(
     CLEAR +
       HIDEC +
-      `${BG_HDR}${WHITE}${B} frouter — Keyboard Reference ${R}\n\n` +
+      `${BG_HDR}${WHITE}${B} free-router — Keyboard Reference ${R}\n\n` +
       `${B}  Navigation${R}\n` +
       `  ↑ / k       Move up\n` +
       `  ↓ / j       Move down\n` +
@@ -545,7 +551,7 @@ function maskKey(key: string) {
 
 function renderSettings() {
   let out = CLEAR + HIDEC;
-  out += `${BG_HDR}${WHITE}${B} frouter Settings ${R}\n\n`;
+  out += `${BG_HDR}${WHITE}${B} free-router Settings ${R}\n\n`;
 
   const pks = Object.keys(PROVIDERS_META);
   for (let i = 0; i < pks.length; i++) {
@@ -614,7 +620,7 @@ const ALLOWED_RENDER_REASONS = new Set([
 function renderWithAuthority(reason: string) {
   if (!ALLOWED_RENDER_REASONS.has(reason)) {
     renderAuthorityViolations++;
-    const msg = `[frouter] non-authoritative render attempt: ${reason}\n`;
+    const msg = `[free-router] non-authoritative render attempt: ${reason}\n`;
     if (STRICT_RENDER_AUTH) throw new Error(msg.trim());
     process.stderr.write(msg);
   }
@@ -661,9 +667,8 @@ function clampCursor(next: number) {
 function resolveUserScrollSortPauseMs(cfg: FrouterConfig): number {
   // Env overrides config so users can tune behavior per terminal/session.
   const raw =
-    process.env.FROUTER_SCROLL_SORT_PAUSE_MS != null
-      ? process.env.FROUTER_SCROLL_SORT_PAUSE_MS
-      : cfg?.ui?.scrollSortPauseMs;
+    readEnv("FREE_ROUTER_SCROLL_SORT_PAUSE_MS", "FROUTER_SCROLL_SORT_PAUSE_MS") ??
+    cfg?.ui?.scrollSortPauseMs;
   if (raw == null || raw === "") return DEFAULT_USER_SCROLL_SORT_PAUSE_MS;
   const parsed = Number(raw);
   if (!Number.isFinite(parsed) || parsed < 0) {
@@ -701,8 +706,10 @@ function enterSearchMode() {
 }
 
 function consumeStartupSearchRequestFromEnv(): boolean {
-  const requested = process.env[OPEN_SEARCH_ON_START_ENV] === "1";
+  const requested =
+    readEnv(OPEN_SEARCH_ON_START_ENV, LEGACY_OPEN_SEARCH_ON_START_ENV) === "1";
   delete process.env[OPEN_SEARCH_ON_START_ENV];
+  delete process.env[LEGACY_OPEN_SEARCH_ON_START_ENV];
   return requested;
 }
 
@@ -837,7 +844,7 @@ function buildOpenCodeLaunchEnv(providerKey: string, apiKey: string | null) {
     launchEnv[envVar] = apiKey;
   }
   // Prevent oh-my-opencode startup auto-update/install logs from polluting
-  // the interactive OpenCode TUI launched by frouter.
+  // the interactive OpenCode TUI launched by free-router.
   if (launchEnv.OPENCODE_CLI_RUN_MODE == null) {
     launchEnv.OPENCODE_CLI_RUN_MODE = "true";
   }
@@ -1377,12 +1384,14 @@ function restoreAfterInkSubApp(returnScreen = "main") {
 
 // ─── Update check ────────────────────────────────────────────────────────────
 const REGISTRY_URL =
-  process.env.FROUTER_REGISTRY_URL ||
-  "https://registry.npmjs.org/frouter-cli/latest";
-const UPDATE_SKIP_ONCE_ENV = "FROUTER_SKIP_UPDATE_ONCE";
-const OPEN_SEARCH_ON_START_ENV = "FROUTER_OPEN_SEARCH_ON_START";
-const UPDATE_PACKAGE_NAME = "frouter-cli";
-const GITHUB_REPO_URL = "https://github.com/jyoung105/frouter";
+  readEnv("FREE_ROUTER_REGISTRY_URL", "FROUTER_REGISTRY_URL") ||
+  "https://registry.npmjs.org/free-router/latest";
+const UPDATE_SKIP_ONCE_ENV = "FREE_ROUTER_SKIP_UPDATE_ONCE";
+const LEGACY_UPDATE_SKIP_ONCE_ENV = "FROUTER_SKIP_UPDATE_ONCE";
+const OPEN_SEARCH_ON_START_ENV = "FREE_ROUTER_OPEN_SEARCH_ON_START";
+const LEGACY_OPEN_SEARCH_ON_START_ENV = "FROUTER_OPEN_SEARCH_ON_START";
+const UPDATE_PACKAGE_NAME = "free-router";
+const GITHUB_REPO_URL = "https://github.com/jyoung105/free-router";
 
 type UpdateInstallCommand = {
   bin: string;
@@ -1473,7 +1482,7 @@ function renderUpdateProgress(percent: number): void {
   const filled = Math.round((pct / 100) * UPDATE_BAR_WIDTH);
   const bar = `${"█".repeat(filled)}${"░".repeat(Math.max(0, UPDATE_BAR_WIDTH - filled))}`;
   process.stdout.write(
-    `\r${D}  Updating frouter-cli [${bar}] ${String(pct).padStart(3)}%${R}`,
+    `\r${D}  Updating free-router [${bar}] ${String(pct).padStart(3)}%${R}`,
   );
 }
 
@@ -1648,7 +1657,7 @@ async function runGlobalUpdate(
 }
 
 async function checkForUpdate(): Promise<void> {
-  if (process.env[UPDATE_SKIP_ONCE_ENV] === "1") return;
+  if (readEnv(UPDATE_SKIP_ONCE_ENV, LEGACY_UPDATE_SKIP_ONCE_ENV) === "1") return;
 
   const latest = await fetchLatestVersion();
   if (!latest || !isStrictlyNewerVersion(PKG_VERSION, latest)) return;
@@ -1673,18 +1682,18 @@ async function checkForUpdate(): Promise<void> {
       else handleGithubStarDeclined();
     }
     process.stdout.write(
-      `${GREEN}  \u2713 Updated to ${latest}. Restarting frouter now...${R}\n\n`,
+      `${GREEN}  \u2713 Updated to ${latest}. Restarting free-router now...${R}\n\n`,
     );
     const restartEnv = startupSearchRequestedThisLaunch
       ? { [OPEN_SEARCH_ON_START_ENV]: "1" }
       : {};
     if (restartAfterUpdate(restartEnv)) return;
     process.stdout.write(
-      `${YELLOW}  ! Update finished, but restart failed. Run frouter manually to use ${latest}.${R}\n\n`,
+      `${YELLOW}  ! Update finished, but restart failed. Run free-router manually to use ${latest}.${R}\n\n`,
     );
   } catch {
     process.stdout.write(
-      `${RED}  \u2717 Update failed. Run manually: npm install -g frouter-cli${R}\n${D}    (or: bun install -g frouter-cli)${R}\n\n`,
+      `${RED}  \u2717 Update failed. Run manually: npm install -g free-router${R}\n${D}    (or: bun install -g free-router)${R}\n\n`,
     );
   }
 }
@@ -1695,7 +1704,7 @@ function cleanup() {
   destroyAgents();
   if (renderAuthorityViolations > 0) {
     process.stderr.write(
-      `[frouter] render authority violations: ${renderAuthorityViolations}\n`,
+      `[free-router] render authority violations: ${renderAuthorityViolations}\n`,
     );
   }
   w(SHOWC + ALT_OFF);
@@ -1716,7 +1725,7 @@ async function runBest() {
   );
   if (!hasKeys) {
     process.stderr.write(
-      "No API keys configured. Run `frouter` to set up keys.\n",
+      "No API keys configured. Run `free-router` to set up keys.\n",
     );
     process.exit(1);
   }
@@ -1783,7 +1792,7 @@ async function main() {
   await checkForUpdate();
 
   if (!process.stdin.isTTY) {
-    process.stderr.write("frouter requires an interactive terminal.\n");
+    process.stderr.write("free-router requires an interactive terminal.\n");
     process.exit(1);
   }
 
