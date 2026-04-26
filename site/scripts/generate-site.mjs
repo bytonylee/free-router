@@ -379,11 +379,11 @@ function enrichRecords(records, context) {
           B: 'tier-b',
           C: 'tier-c',
         }[record.tier] || 'tier-c',
-      sweDisplay: formatValue(record.swe_bench, '—'),
-      intelDisplay: formatValue(record.aa_intelligence, '—'),
+      sweDisplay: formatValue(record.swe_bench, '·'),
+      intelDisplay: formatValue(record.aa_intelligence, '·'),
       speedDisplay:
         record.aa_speed_tps === null || record.aa_speed_tps === undefined
-          ? '—'
+          ? '·'
           : Number(record.aa_speed_tps).toFixed(0),
       description: `${record.name} is available on ${providerLabel(record.source)} with a ${formatValue(record.tier, 'Unranked')} tier, ${formatValue(record.context, 'unknown')} context, ${formatValue(record.swe_bench, 'no')} SWE score, and ${formatValue(record.aa_speed_tps, 'no')} TPS signal on free-router.`,
     };
