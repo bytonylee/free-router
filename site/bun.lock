@@ -5,8 +5,8 @@
     "": {
       "name": "frouter-site",
       "devDependencies": {
-        "typescript": "^5.8.3",
-        "vite": "^6.3.1",
+        "typescript": "^5.9.3",
+        "vite": "^6.4.2",
       },
     },
   },
