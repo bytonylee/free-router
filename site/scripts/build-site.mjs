@@ -39,8 +39,8 @@ async function verifyArtifacts() {
     'href="models/',
     'model-link',
     '/logo/light/favicon.ico',
-    '/logo/dark/favicon.ico',
-    'data-favicon="ico"',
+    'id="favicon-ico"',
+    'id="site-webmanifest"',
   ];
 
   for (const fragment of requiredIndexFragments) {
