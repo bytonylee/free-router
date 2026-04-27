@@ -3,7 +3,7 @@
 
 import { useRef, useState } from "react";
 import { Text, Box, useInput } from "ink";
-import { Select, PasswordInput, StatusMessage } from "@inkjs/ui";
+import { Select, PasswordInput, StatusMessage } from "./primitives.js";
 import { useMountEffect } from "./useMountEffect.js";
 
 type ProviderMeta = {

@@ -1778,15 +1778,10 @@ async function main() {
   userScrollSortPauseMs = resolveUserScrollSortPauseMs(config);
 
   if (!Object.keys(config.apiKeys || {}).length && process.stdin.isTTY) {
-    config = await runFirstRunWizard(config);
-    if (
-      Object.keys(config.apiKeys || {}).length &&
-      !starPromptHandledThisLaunch
-    ) {
-      const support = await promptGithubStarSupport();
-      if (support) handleGithubStarAccepted();
-      else handleGithubStarDeclined();
-    }
+    const outcome = await runFirstRunWizard(config);
+    config = outcome.config;
+    if (outcome.starPromptHandled) starPromptHandledThisLaunch = true;
+    if (outcome.startupSearchRequested) startupSearchRequestedThisLaunch = true;
   }
 
   await checkForUpdate();
