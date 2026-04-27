@@ -5,21 +5,17 @@
 
 // ─── Theme toggle ────────────────────────────────────────────────────────
 const FAVICON_FILES: Record<string, string> = {
-  "ico": "favicon.ico",
-  "32": "favicon-32x32.png",
-  "16": "favicon-16x16.png",
-  apple: "apple-touch-icon.png",
+  "favicon-ico": "favicon.ico",
+  "favicon-32": "favicon-32x32.png",
+  "favicon-16": "favicon-16x16.png",
+  "apple-touch-icon": "apple-touch-icon.png",
+  "site-webmanifest": "site.webmanifest",
 };
 
 function syncFavicons(theme: "light" | "dark") {
-  document.querySelectorAll<HTMLLinkElement>("link[data-favicon]").forEach((link) => {
-    const file = FAVICON_FILES[link.dataset.favicon ?? ""];
-    if (!file) return;
-
-    link.href = `${import.meta.env.BASE_URL}logo/${theme}/${file}`;
-    if (link.rel === "icon") {
-      link.media = "(prefers-color-scheme: light), (prefers-color-scheme: dark)";
-    }
+  const base = `/logo/${theme}/`;
+  Object.entries(FAVICON_FILES).forEach(([id, file]) => {
+    document.getElementById(id)?.setAttribute("href", `${base}${file}`);
   });
 }
 
