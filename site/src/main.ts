@@ -4,16 +4,38 @@
 // ═══════════════════════════════════════════════════════════════════════
 
 // ─── Theme toggle ────────────────────────────────────────────────────────
+const FAVICON_FILES: Record<string, string> = {
+  "ico": "favicon.ico",
+  "32": "favicon-32x32.png",
+  "16": "favicon-16x16.png",
+  apple: "apple-touch-icon.png",
+};
+
+function syncFavicons(theme: "light" | "dark") {
+  document.querySelectorAll<HTMLLinkElement>("link[data-favicon]").forEach((link) => {
+    const file = FAVICON_FILES[link.dataset.favicon ?? ""];
+    if (!file) return;
+
+    link.href = `${import.meta.env.BASE_URL}logo/${theme}/${file}`;
+    if (link.rel === "icon") {
+      link.media = "(prefers-color-scheme: light), (prefers-color-scheme: dark)";
+    }
+  });
+}
+
 function initTheme() {
   const root = document.documentElement;
   const stored = localStorage.getItem("fr-theme");
   const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
   const initial = stored ?? (prefersDark ? "dark" : "light");
   if (initial === "dark") root.classList.add("dark");
+  syncFavicons(initial === "dark" ? "dark" : "light");
 
   document.getElementById("theme-toggle")?.addEventListener("click", () => {
     const isDark = root.classList.toggle("dark");
-    localStorage.setItem("fr-theme", isDark ? "dark" : "light");
+    const theme = isDark ? "dark" : "light";
+    localStorage.setItem("fr-theme", theme);
+    syncFavicons(theme);
   });
 }
 initTheme();

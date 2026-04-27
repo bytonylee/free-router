@@ -38,6 +38,9 @@ async function verifyArtifacts() {
     'Route through the fastest free models. Start building in seconds.',
     'href="models/',
     'model-link',
+    '/logo/light/favicon.ico',
+    '/logo/dark/favicon.ico',
+    'data-favicon="ico"',
   ];
 
   for (const fragment of requiredIndexFragments) {

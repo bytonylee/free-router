@@ -159,6 +159,21 @@ function buildHeadMarkup({
   ].join('\n    ');
 }
 
+function buildFaviconMarkup(prefix = '/') {
+  const normalizedPrefix = prefix.endsWith('/') ? prefix : `${prefix}/`;
+  const iconPath = (theme, file) => `${normalizedPrefix}logo/${theme}/${file}`;
+
+  return [
+    `<link rel="icon" type="image/x-icon" href="${iconPath('light', 'favicon.ico')}" media="(prefers-color-scheme: light)" data-favicon="ico" />`,
+    `<link rel="icon" type="image/x-icon" href="${iconPath('dark', 'favicon.ico')}" media="(prefers-color-scheme: dark)" data-favicon="ico" />`,
+    `<link rel="icon" type="image/png" sizes="32x32" href="${iconPath('light', 'favicon-32x32.png')}" media="(prefers-color-scheme: light)" data-favicon="32" />`,
+    `<link rel="icon" type="image/png" sizes="32x32" href="${iconPath('dark', 'favicon-32x32.png')}" media="(prefers-color-scheme: dark)" data-favicon="32" />`,
+    `<link rel="icon" type="image/png" sizes="16x16" href="${iconPath('light', 'favicon-16x16.png')}" media="(prefers-color-scheme: light)" data-favicon="16" />`,
+    `<link rel="icon" type="image/png" sizes="16x16" href="${iconPath('dark', 'favicon-16x16.png')}" media="(prefers-color-scheme: dark)" data-favicon="16" />`,
+    `<link rel="apple-touch-icon" sizes="180x180" href="${iconPath('light', 'apple-touch-icon.png')}" data-favicon="apple" />`,
+  ].join('\n    ');
+}
+
 function buildModelRow(record) {
   const searchCorpus = [
     record.model_id,
@@ -202,7 +217,7 @@ function buildModelPage(record, context, homeUrl) {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/x-icon" href="../../favicon.ico" />
+    ${buildFaviconMarkup('../../')}
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;700&display=swap" rel="stylesheet" />
