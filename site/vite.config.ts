@@ -23,7 +23,7 @@ function collectHtmlEntries(rootDir: string, directory: string, entries: Record<
 }
 
 export default defineConfig({
-  base: process.env.BASE_PATH || '/',
+  base: '/',
   build: {
     rollupOptions: {
       input: (() => {
