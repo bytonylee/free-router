@@ -24,11 +24,13 @@ async function verifyArtifacts() {
   const distIndexPath = path.join(siteRoot, 'dist', 'index.html');
   const distSitemapPath = path.join(siteRoot, 'dist', 'sitemap.xml');
   const distRobotsPath = path.join(siteRoot, 'dist', 'robots.txt');
+  const distLlmsPath = path.join(siteRoot, 'dist', 'llms.txt');
 
-  const [indexHtml, sitemapXml, robotsTxt] = await Promise.all([
+  const [indexHtml, sitemapXml, robotsTxt, llmsTxt] = await Promise.all([
     readFile(distIndexPath, 'utf8'),
     readFile(distSitemapPath, 'utf8'),
     readFile(distRobotsPath, 'utf8'),
+    readFile(distLlmsPath, 'utf8'),
   ]);
 
   const requiredIndexFragments = [
@@ -53,6 +55,12 @@ async function verifyArtifacts() {
   for (const fragment of ['<urlset', '<loc>']) {
     if (!sitemapXml.includes(fragment)) {
       throw new Error(`Generated sitemap.xml is missing ${fragment}`);
+    }
+  }
+
+  for (const fragment of ['# free-router', '## Core Pages', '## Model Profiles', 'sitemap.xml']) {
+    if (!llmsTxt.includes(fragment)) {
+      throw new Error(`Generated llms.txt is missing ${fragment}`);
     }
   }
 }
