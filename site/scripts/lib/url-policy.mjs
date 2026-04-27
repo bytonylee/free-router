@@ -1,3 +1,6 @@
+export const SITE_ORIGIN = 'https://free-router.tonylee.im';
+export const SITE_BASE_PATH = '/';
+
 function ensureTrailingSlash(pathname) {
   const normalized = pathname.replace(/\/{2,}/g, '/');
   if (normalized === '/') {
@@ -51,60 +54,13 @@ export function normalizeSiteOrigin(value) {
   }
 }
 
-function resolvePreviewOrigin(env) {
-  const explicitPreviewOrigin =
-    normalizeSiteOrigin(env.SITE_PREVIEW_URL) ||
-    normalizeSiteOrigin(env.PREVIEW_URL) ||
-    normalizeSiteOrigin(env.DEPLOY_PRIME_URL) ||
-    normalizeSiteOrigin(env.DEPLOY_URL);
-
-  if (explicitPreviewOrigin) {
-    return explicitPreviewOrigin;
-  }
-
-  if (env.VERCEL_BRANCH_URL) {
-    return normalizeSiteOrigin(`https://${env.VERCEL_BRANCH_URL}`);
-  }
-
-  if (env.VERCEL_URL) {
-    return normalizeSiteOrigin(`https://${env.VERCEL_URL}`);
-  }
-
-  return null;
-}
-
-export function resolveBuildContext(env = process.env) {
-  const buildMode = env.SITE_BUILD_ENV || env.VERCEL_ENV || 'local';
-  const basePath = normalizeBasePath(env.BASE_PATH || '/');
-
-  if (buildMode === 'production') {
-    const origin = normalizeSiteOrigin(env.SITE_URL);
-    return {
-      mode: 'production',
-      origin,
-      basePath,
-      robotsContent: 'index, follow',
-      requiresHttps: true,
-    };
-  }
-
-  if (buildMode === 'preview') {
-    const origin = resolvePreviewOrigin(env);
-    return {
-      mode: 'preview',
-      origin,
-      basePath,
-      robotsContent: 'noindex, nofollow',
-      requiresHttps: false,
-    };
-  }
-
+export function resolveBuildContext() {
   return {
-    mode: 'local',
-    origin: normalizeSiteOrigin(env.LOCAL_SITE_URL) || 'http://localhost:4173',
-    basePath,
-    robotsContent: 'noindex, nofollow',
-    requiresHttps: false,
+    mode: 'production',
+    origin: SITE_ORIGIN,
+    basePath: SITE_BASE_PATH,
+    robotsContent: 'index, follow',
+    requiresHttps: true,
   };
 }
 
@@ -118,8 +74,8 @@ export function validateBuildContext(context) {
 
   try {
     const origin = new URL(context.origin);
-    if (context.mode === 'production' && origin.protocol !== 'https:') {
-      errors.push('Production SITE_URL must be HTTPS');
+    if (context.requiresHttps && origin.protocol !== 'https:') {
+      errors.push('Site origin must be HTTPS');
     }
   } catch {
     errors.push('Resolved site origin is invalid');
