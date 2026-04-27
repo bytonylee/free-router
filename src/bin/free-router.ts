@@ -57,7 +57,7 @@ import {
   readEnv,
   type Model,
 } from "../lib/utils.js";
-import { spawn, spawnSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import { realpathSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { basename, dirname } from "node:path";
@@ -1481,17 +1481,6 @@ function promptGithubStarSupport(): Promise<boolean> {
   return promptYesNo(`${D}  Support for github star: [Y/n] ${R}`, true);
 }
 
-const UPDATE_BAR_WIDTH = 24;
-
-function renderUpdateProgress(percent: number): void {
-  const pct = Math.max(0, Math.min(100, Math.round(percent)));
-  const filled = Math.round((pct / 100) * UPDATE_BAR_WIDTH);
-  const bar = `${"█".repeat(filled)}${"░".repeat(Math.max(0, UPDATE_BAR_WIDTH - filled))}`;
-  process.stdout.write(
-    `\r${D}  Updating free-router [${bar}] ${String(pct).padStart(3)}%${R}`,
-  );
-}
-
 function readHighestPercent(text: string): number | null {
   let highest = -1;
   for (const match of text.matchAll(/(\d{1,3})%/g)) {
@@ -1601,64 +1590,30 @@ function restartAfterUpdate(extraEnv: NodeJS.ProcessEnv = {}): boolean {
   process.exit(restarted.status ?? 0);
 }
 
-async function runGlobalUpdate(
-  command: UpdateInstallCommand,
-): Promise<boolean> {
+async function runUpdateApp(
+  latest: string,
+): Promise<"skipped" | "updated" | "failed"> {
+  const [{ render }, React, { UpdateApp }] = await Promise.all([
+    import("ink"),
+    import("react"),
+    import("../tui/UpdateApp.js"),
+  ]);
+
   return new Promise((resolve) => {
-    let done = false;
-    let progress = 0;
-
-    function finish(ok: boolean) {
-      if (done) return;
-      done = true;
-      process.stdout.write("\n");
-      resolve(ok);
-    }
-
-    function setProgress(next: number) {
-      const pct = Math.max(progress, Math.min(100, Math.round(next)));
-      if (pct === progress) return;
-      progress = pct;
-      renderUpdateProgress(progress);
-    }
-
-    renderUpdateProgress(progress);
-
-    const child = spawn(command.bin, command.args, {
-      stdio: ["ignore", "pipe", "pipe"],
-      env: Object.fromEntries(
-        Object.entries(process.env).filter(
-          ([k]) => !k.toLowerCase().startsWith("npm_"),
-        ),
-      ),
+    let resolved = false;
+    const element = React.createElement(UpdateApp, {
+      currentVersion: PKG_VERSION,
+      latestVersion: latest,
+      detectInstallCommand: detectUpdateInstallCommand,
+      readHighestPercent,
+      onDone: (result: "skipped" | "updated" | "failed") => {
+        if (resolved) return;
+        resolved = true;
+        instance.unmount();
+        resolve(result);
+      },
     });
-
-    const fallback = setInterval(() => {
-      if (progress < 95) setProgress(progress + 1);
-    }, 120);
-
-    const onChunk = (chunk: string | Buffer) => {
-      const highest = readHighestPercent(String(chunk));
-      if (highest != null) setProgress(Math.min(highest, 99));
-    };
-
-    child.stdout?.on("data", onChunk);
-    child.stderr?.on("data", onChunk);
-
-    child.on("error", () => {
-      clearInterval(fallback);
-      finish(false);
-    });
-
-    child.on("close", (code) => {
-      clearInterval(fallback);
-      if (code === 0) {
-        setProgress(100);
-        finish(true);
-        return;
-      }
-      finish(false);
-    });
+    const instance = render(element, { exitOnCtrlC: false });
   });
 }
 
@@ -1668,40 +1623,47 @@ async function checkForUpdate(): Promise<void> {
   const latest = await fetchLatestVersion();
   if (!latest || !isStrictlyNewerVersion(PKG_VERSION, latest)) return;
 
-  process.stdout.write(
-    `\n${YELLOW}  Update available: ${D}${PKG_VERSION}${R} \u2192 ${GREEN}${latest}${R}\n`,
-  );
+  if (!detectUpdateInstallCommand()) {
+    process.stdout.write(
+      `\n${YELLOW}  Update available: ${D}${PKG_VERSION}${R} \u2192 ${GREEN}${latest}${R}${D} (no supported updater)${R}\n\n`,
+    );
+    return;
+  }
 
-  const yes = await promptYesNo(`${D}  Update now? (Y/n, default: n): ${R}`);
-  if (!yes) {
+  if (!process.stdin.isTTY) {
+    process.stdout.write(
+      `\n${YELLOW}  Update available: ${D}${PKG_VERSION}${R} \u2192 ${GREEN}${latest}${R}${D} (run interactively to update)${R}\n\n`,
+    );
+    return;
+  }
+
+  const result = await runUpdateApp(latest);
+  if (result === "skipped") {
     process.stdout.write(`${D}  Skipped update.${R}\n\n`);
     return;
   }
-  try {
-    const command = detectUpdateInstallCommand();
-    if (!command) throw new Error("no supported updater");
-    const ok = await runGlobalUpdate(command);
-    if (!ok) throw new Error("update command failed");
-    if (!starPromptHandledThisLaunch) {
-      const support = await promptGithubStarSupport();
-      if (support) handleGithubStarAccepted();
-      else handleGithubStarDeclined();
-    }
-    process.stdout.write(
-      `${GREEN}  \u2713 Updated to ${latest}. Restarting free-router now...${R}\n\n`,
-    );
-    const restartEnv = startupSearchRequestedThisLaunch
-      ? { [OPEN_SEARCH_ON_START_ENV]: "1" }
-      : {};
-    if (restartAfterUpdate(restartEnv)) return;
-    process.stdout.write(
-      `${YELLOW}  ! Update finished, but restart failed. Run free-router manually to use ${latest}.${R}\n\n`,
-    );
-  } catch {
+  if (result === "failed") {
     process.stdout.write(
       `${RED}  \u2717 Update failed. Run manually: npm install -g free-router${R}\n${D}    (or: bun install -g free-router)${R}\n\n`,
     );
+    return;
   }
+
+  if (!starPromptHandledThisLaunch) {
+    const support = await promptGithubStarSupport();
+    if (support) handleGithubStarAccepted();
+    else handleGithubStarDeclined();
+  }
+  process.stdout.write(
+    `${GREEN}  \u2713 Updated to ${latest}. Restarting free-router now...${R}\n\n`,
+  );
+  const restartEnv = startupSearchRequestedThisLaunch
+    ? { [OPEN_SEARCH_ON_START_ENV]: "1" }
+    : {};
+  if (restartAfterUpdate(restartEnv)) return;
+  process.stdout.write(
+    `${YELLOW}  ! Update finished, but restart failed. Run free-router manually to use ${latest}.${R}\n\n`,
+  );
 }
 
 // ─── Cleanup ───────────────────────────────────────────────────────────────────

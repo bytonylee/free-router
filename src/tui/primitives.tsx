@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { Text, Box, useInput } from "ink";
+import { useMountEffect } from "./useMountEffect.js";
 
 type SelectOption = { label: string; value: string };
 
@@ -99,5 +100,69 @@ export function StatusMessage({
     <Text color={color}>
       {icon} {children}
     </Text>
+  );
+}
+
+export function ConfirmInput({
+  defaultChoice = "confirm",
+  onConfirm,
+  onCancel,
+}: {
+  defaultChoice?: "confirm" | "cancel";
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  useInput((input, key) => {
+    if (key.return) {
+      if (defaultChoice === "confirm") onConfirm();
+      else onCancel();
+      return;
+    }
+    if (key.escape) {
+      onCancel();
+      return;
+    }
+    const ch = input.toLowerCase();
+    if (ch === "y") onConfirm();
+    else if (ch === "n") onCancel();
+  });
+
+  const hint = defaultChoice === "confirm" ? "[Y/n]" : "[y/N]";
+  return <Text dimColor>{hint}</Text>;
+}
+
+const SPINNER_FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+
+export function Spinner({ label }: { label?: string }) {
+  const [frame, setFrame] = useState(0);
+  useMountEffect(() => {
+    const t = setInterval(
+      () => setFrame((i) => (i + 1) % SPINNER_FRAMES.length),
+      80,
+    );
+    return () => clearInterval(t);
+  });
+  return (
+    <Text>
+      <Text color="cyan">{SPINNER_FRAMES[frame]}</Text>
+      {label ? <Text> {label}</Text> : null}
+    </Text>
+  );
+}
+
+export function ProgressBar({
+  value,
+  width = 24,
+}: {
+  value: number;
+  width?: number;
+}) {
+  const pct = Math.max(0, Math.min(100, value));
+  const filled = Math.round((pct / 100) * width);
+  return (
+    <Box>
+      <Text color="green">{"█".repeat(filled)}</Text>
+      <Text dimColor>{"░".repeat(Math.max(0, width - filled))}</Text>
+    </Box>
   );
 }
