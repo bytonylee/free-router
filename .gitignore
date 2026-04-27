@@ -51,6 +51,7 @@ test-results/
 /tests/
 /site/.generated/
 /site/models/
+/site/public/llms.txt
 /site/public/robots.txt
 /site/public/sitemap.xml
 
