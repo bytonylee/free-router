@@ -29,7 +29,7 @@ printf 'Onboarding tips:\n'
 printf '  - Press ESC to skip a provider.\n'
 printf '  - Enter y to open signup page for a provider key.\n\n'
 
-BIN_PATH="${ROOT_DIR}/dist/bin/frouter.js"
+BIN_PATH="${ROOT_DIR}/dist/bin/free-router.js"
 if [[ ! -f "${BIN_PATH}" ]]; then
   printf 'Missing %s. Run `npm run build` first.\n' "${BIN_PATH}" >&2
   exit 1

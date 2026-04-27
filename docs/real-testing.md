@@ -15,7 +15,7 @@ When you want confidence that users can really install and run `free-router`, te
 
 If the purpose is “does the released package work for a real user?”, do **not** run:
 
-- `node dist/bin/frouter.js`
+- `node dist/bin/free-router.js`
 - repo-local patched code
 - your normal shell with your real home/config
 
