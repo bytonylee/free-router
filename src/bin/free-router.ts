@@ -182,7 +182,7 @@ const DEFAULT_COLS = 80;
 const DEFAULT_ROWS = 12;
 const MIN_COLS = 40;
 const MIN_ROWS = 8;
-const CHROME_ROWS = 5;
+const BASE_CHROME_ROWS = 5;
 
 function envSize(name: string): number | null {
   const raw = process.env[name];
@@ -236,7 +236,8 @@ const cols = () => viewport().c;
 const rows = () => viewport().r;
 // All lines are truncated to terminal width so nothing wraps.
 // Chrome: header(1) + search bar(1) + colhdr(1) + detail(1) + footer(1) = 5 lines
-const tRows = () => Math.max(0, rows() - CHROME_ROWS);
+const mainChromeRows = () => BASE_CHROME_ROWS + (topAlertLine() ? 1 : 0);
+const tRows = () => Math.max(0, rows() - mainChromeRows());
 const WRAP_GUARD_COLS = 1;
 
 // ─── Sort column metadata ──────────────────────────────────────────────────────
@@ -356,20 +357,32 @@ function statusDot(model: Model) {
   }
 }
 
-// ─── Expired key detection ───────────────────────────────────────────────────
-function isProviderKeyExpired(providerKey: string): boolean {
+// ─── Rejected key detection ──────────────────────────────────────────────────
+function isRejectedKeyStatus(status: string): boolean {
+  return status === "noauth" || status === "forbidden";
+}
+
+function isProviderKeyRejected(providerKey: string): boolean {
+  if (!getApiKey(config, providerKey)) return false;
   const provConf = config.providers?.[providerKey];
   if (provConf?.enabled === false) return false;
   const provModels = models.filter((m) => m.providerKey === providerKey);
   if (provModels.length === 0) return false;
   const pinged = provModels.filter((m) => m.status && m.status !== "pending");
   if (pinged.length === 0) return false;
-  return pinged.every((m) => m.status === "noauth");
+  return pinged.every((m) => isRejectedKeyStatus(m.status));
 }
 
-function findExpiredProvider(): string | null {
+function findRejectedKeyProvider(): string | null {
   for (const pk of Object.keys(PROVIDERS_META)) {
-    if (isProviderKeyExpired(pk)) return pk;
+    if (isProviderKeyRejected(pk)) return pk;
+  }
+  return null;
+}
+
+function topAlertLine(): string | null {
+  if (isProviderKeyRejected("nvidia")) {
+    return `${RED}${B} NVIDIA NIM API Key is wrong.${R} ${D}Press R to update.${R}`;
   }
   return null;
 }
@@ -377,7 +390,8 @@ function findExpiredProvider(): string | null {
 // ─── Main TUI ──────────────────────────────────────────────────────────────────
 function renderMain() {
   const { c, r } = viewport();
-  const tr = Math.max(0, r - CHROME_ROWS);
+  const topAlert = topAlertLine();
+  const tr = Math.max(0, r - mainChromeRows());
   if (cursor < scrollOff) scrollOff = cursor;
   if (cursor >= scrollOff + tr) scrollOff = cursor - tr + 1;
 
@@ -387,7 +401,7 @@ function renderMain() {
       if (!on) return `${D}${m.name} off${R}`;
       const key = getApiKey(config, pk);
       if (!key) return `${YELLOW}${m.name} ○${R}`;
-      if (isProviderKeyExpired(pk)) return `${RED}${m.name} ✗${R}`;
+      if (isProviderKeyRejected(pk)) return `${RED}${m.name} ✗${R}`;
       return `${GREEN}${m.name} ✓${R}`;
     })
     .join("  ");
@@ -401,7 +415,7 @@ function renderMain() {
     .map(([pk, m]) => {
       const key = getApiKey(config, pk);
       if (!key) return `${YELLOW}${m.name}:○${R}`;
-      if (isProviderKeyExpired(pk)) return `${RED}${m.name}:✗${R}`;
+      if (isProviderKeyRejected(pk)) return `${RED}${m.name}:✗${R}`;
       return `${GREEN}${m.name}:✓${R}`;
     })
     .join("  ");
@@ -435,6 +449,7 @@ function renderMain() {
   // Header
   const hdrRaw = `${BG_HDR}${WHITE}${B} free-router ${R}  ${provStatus}${R}`;
   out += fullWidthLine(hdrRaw) + "\n";
+  if (topAlert) out += fullWidthLine(topAlert) + "\n";
 
   // Search + stats bar
   out += fullWidthLine(` ${searchBar}   ${tierBar}${stats}`) + "\n";
@@ -538,7 +553,7 @@ function renderHelp() {
       `  Enter       Save config + open current model in opencode\n` +
       `  /           Focus model search (filter by model name; Enter opens opencode)\n` +
       `  A           Quick API key add/change (opens key editor)\n` +
-      `  R           Change API key (auto-detects expired provider)\n` +
+      `  R           Change API key (auto-detects rejected provider)\n` +
       `  T           Cycle tier filter (All → S+ → S → …)\n` +
       `  P           Settings (API keys, toggle providers)\n` +
       `  W / X       Faster / slower ping interval\n` +
@@ -1035,9 +1050,9 @@ function handleMain(ch: string) {
     openApiKeyEditorFromMain();
     return;
   } else if (ch === "r" || ch === "R") {
-    const expired = findExpiredProvider();
-    if (expired) {
-      openApiKeyEditorFromMain(expired);
+    const rejected = findRejectedKeyProvider();
+    if (rejected) {
+      openApiKeyEditorFromMain(rejected);
     } else {
       // Fall back to current model's provider or first provider
       const sel = filtered[cursor];
