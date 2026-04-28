@@ -12,9 +12,9 @@ prints a rename notice, and forwards the `frouter` command.
 ## Publish
 
 ```bash
-cd frouter-cli-shim/
+cd publish/frouter-cli-shim/
 npm publish --access public
-cd ..
+cd ../..
 npm deprecate "frouter-cli@*" "Moved to @bytonylee/free-router. Install: npm i -g @bytonylee/free-router"
 ```
 
