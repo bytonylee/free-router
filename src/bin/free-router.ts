@@ -84,8 +84,6 @@ const INVERT = "\x1b[7m";
 const BG_HDR = "\x1b[48;5;17m";
 const BG_SEARCH = "\x1b[48;5;235m";
 const BG_TABLE_HDR = "\x1b[48;5;236m";
-const BG_TABLE_ROW = "\x1b[48;5;232m";
-const BG_TABLE_ROW_ALT = "\x1b[48;5;233m";
 const BG_OK = "\x1b[48;5;22m";
 const BG_WARN = "\x1b[48;5;58m";
 const BG_BAD = "\x1b[48;5;52m";
@@ -192,7 +190,7 @@ const DEFAULT_COLS = 80;
 const DEFAULT_ROWS = 12;
 const MIN_COLS = 40;
 const MIN_ROWS = 8;
-const BASE_CHROME_ROWS = 7;
+const BASE_CHROME_ROWS = 8;
 
 function envSize(name: string): number | null {
   const raw = process.env[name];
@@ -245,7 +243,7 @@ function viewport() {
 const cols = () => viewport().c;
 const rows = () => viewport().r;
 // All lines are truncated to terminal width so nothing wraps.
-// Chrome: provider tag row + search block(3) + colhdr/detail/footer = 7 lines
+// Chrome: provider tag row + search block(3) + header/separator/detail/footer = 8 lines
 const mainChromeRows = () => BASE_CHROME_ROWS + (topAlertLine() ? 1 : 0);
 const tRows = () => Math.max(0, rows() - mainChromeRows());
 const WRAP_GUARD_COLS = 1;
@@ -389,8 +387,9 @@ function tableCell(
   return `${style}${leftPad}${truncated}${style}${rightPad}${R}`;
 }
 
-function tableLine(cells: string[], style: string): string {
-  return fullWidthLine(`${style}${cells.join(`${R} ${style}`)}${R}`);
+function tableLine(cells: string[], separatorStyle = ""): string {
+  const separator = separatorStyle ? `${R}${separatorStyle} ${R}` : " ";
+  return fullWidthLine(cells.join(separator));
 }
 
 function tableHeaderLine(): string {
@@ -402,21 +401,22 @@ function tableHeaderLine(): string {
       col.right,
     ),
   );
-  return tableLine(cells, `${BG_TABLE_ROW}${WHITE}`);
+  return tableLine(cells, `${BG_TABLE_HDR}${WHITE}${B}`);
+}
+
+function tableSeparatorLine(): string {
+  return fullWidthLine(`${D}${"─".repeat(Math.max(0, cols() - WRAP_GUARD_COLS))}${R}`);
 }
 
 function tableRowLine(
   values: Record<TableColumn["key"], string>,
   selected: boolean,
-  odd: boolean,
 ): string {
-  const rowStyle = selected
-    ? `${BG_SEL}${WHITE}${B}`
-    : `${odd ? BG_TABLE_ROW_ALT : BG_TABLE_ROW}${WHITE}`;
+  const rowStyle = selected ? `${BG_SEL}${WHITE}${B}` : WHITE;
   const cells = TABLE_COLUMNS.map((col) =>
     tableCell(values[col.key], col.width, rowStyle, col.right),
   );
-  return tableLine(cells, rowStyle);
+  return tableLine(cells);
 }
 
 // Truncate a string with ANSI codes to at most `maxVis` visible columns.
@@ -572,6 +572,7 @@ function renderMain() {
 
   // Column headers with sort indicators
   out += tableHeaderLine() + "\n";
+  out += tableSeparatorLine() + "\n";
 
   // Model rows (skip if terminal too small)
   if (tr === 0) {
@@ -637,7 +638,6 @@ function renderMain() {
             verdict,
           },
           isSel,
-          idx % 2 === 1,
         ) + "\n";
     }
   } // end if (!isLoading)
