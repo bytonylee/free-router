@@ -8,10 +8,11 @@
 // - exclude OCR, video, audio, speech, embedding, rerank, safety, and detector models
 //
 // Usage:
-//   npx tsx scripts/update-models.ts [--apply] [--report <path>] [--fail-on-unresolved-tier]
+//   npx tsx scripts/update-models.ts [--apply] [--opencode-only] [--report <path>] [--fail-on-unresolved-tier]
 //
 // Flags:
 //   --apply                     Write updated files (model-rankings.json, model-support.json)
+//   --opencode-only             Update only OpenCode support metadata
 //   --report <path>             Write machine-readable sync report JSON
 //   --fail-on-unresolved-tier   Exit non-zero when new models still have tier "?"
 
@@ -27,6 +28,7 @@ const SUPPORT_PATH = join(ROOT, "data", "model-support.json");
 const MODELS_TS_PATH = join(ROOT, "src", "lib", "models.ts");
 
 const APPLY = process.argv.includes("--apply");
+const OPENCODE_ONLY = process.argv.includes("--opencode-only");
 const FAIL_ON_UNRESOLVED_TIER = process.argv.includes(
   "--fail-on-unresolved-tier",
 );
@@ -435,7 +437,7 @@ function addSupportId(
   provider: ProviderKey,
   modelId: string,
 ) {
-  const bare = stripProviderPrefix(modelId.trim());
+  const bare = modelId.trim();
   if (!looksLikeModelId(bare)) return;
   target[provider].add(bare);
   target[provider].add(stripFreeSuffix(bare));
@@ -450,6 +452,11 @@ function parseOpenCodeSupport(raw: any) {
     if (typeof node === "string") {
       const text = node.trim();
 
+      if (providerHint && looksLikeModelId(text)) {
+        addSupportId(out, providerHint, text);
+        return;
+      }
+
       if (text.startsWith("openrouter/")) {
         addSupportId(out, "openrouter", text.slice("openrouter/".length));
         return;
@@ -463,9 +470,6 @@ function parseOpenCodeSupport(raw: any) {
         return;
       }
 
-      if (providerHint && looksLikeModelId(text)) {
-        addSupportId(out, providerHint, text);
-      }
       return;
     }
 
@@ -534,25 +538,28 @@ function isOpenCodeSupported(
   const set = support[provider];
   if (!set || set.size === 0) return null;
 
-  const bare = stripProviderPrefix(modelId);
+  const bare = modelId.trim();
   const noFree = stripFreeSuffix(bare);
   const candidates = new Set([bare, noFree, `${noFree}:free`]);
 
   for (const c of candidates) {
     if (set.has(c)) return true;
   }
-  return false;
+  return null;
 }
 
 function writeSupportFile(
   support: ReturnType<typeof emptySupportSets>,
-  fetchedFromGithub: boolean,
+  sourceKind: "models.dev" | "opencode-github" | "existing",
 ) {
-  const source = fetchedFromGithub
-    ? "https://github.com/opencode-ai/opencode/blob/main/internal/llm/models/"
-    : "https://models.dev/api.json";
+  const source =
+    sourceKind === "opencode-github"
+      ? "https://github.com/opencode-ai/opencode/blob/main/internal/llm/models/"
+      : "https://models.dev/api.json";
   const note =
-    "OpenCode has NO built-in nvidia/NIM provider. OpenRouter has ~20 hardcoded models.";
+    sourceKind === "opencode-github"
+      ? "OpenCode GitHub source fallback. Prefer Models.dev when available."
+      : "OpenCode uses Models.dev for built-in provider/model names. Missing matches are treated as unknown, not unsupported.";
   const providers = {
     nvidia: [...support.nvidia].sort((a, b) => a.localeCompare(b)),
     openrouter: [...support.openrouter].sort((a, b) => a.localeCompare(b)),
@@ -581,6 +588,26 @@ function writeSupportFile(
     providers,
   };
   writeFileSync(SUPPORT_PATH, JSON.stringify(next, null, 2) + "\n");
+}
+
+function applyOpenCodeSupportToRankings(
+  rankings: any,
+  support: ReturnType<typeof emptySupportSets>,
+) {
+  let changed = false;
+
+  for (const entry of rankings.models) {
+    if (entry.source !== "nim" && entry.source !== "openrouter") continue;
+
+    const provider = entry.source === "nim" ? "nvidia" : "openrouter";
+    const supportState = isOpenCodeSupported(provider, entry.model_id, support);
+    if (supportState !== null && entry.opencode_supported !== supportState) {
+      entry.opencode_supported = supportState;
+      changed = true;
+    }
+  }
+
+  return changed;
 }
 
 // ─── Artificial Analysis matching ────────────────────────────────────────────
@@ -853,49 +880,54 @@ async function main() {
     );
   }
 
-  // ── OpenCode support fetch (from OpenCode GitHub source) ─────────────────
-  // OpenCode has NO built-in nvidia/NIM provider.
-  // Only 20 hardcoded OpenRouter models exist in the source.
-  // Source: https://github.com/opencode-ai/opencode/blob/main/internal/llm/models/openrouter.go
-  console.log("Fetching OpenCode-supported models (OpenCode GitHub source)...");
+  // ── OpenCode support fetch (from Models.dev) ─────────────────────────────
+  // OpenCode documents Models.dev as the source for built-in provider/model
+  // names, so use it for positive support mapping. Missing entries remain
+  // unknown and can be handled by runtime fallback rules.
+  console.log("Fetching OpenCode-supported models (Models.dev)...");
   let support = loadExistingSupportFile();
   let supportFetched = false;
-  let supportFromGithub = false;
+  let supportSource: "models.dev" | "opencode-github" | "existing" =
+    "existing";
 
   try {
-    const goSource = await fetchJson(
-      "raw.githubusercontent.com",
-      "/opencode-ai/opencode/main/internal/llm/models/openrouter.go",
-      { raw: true },
-    );
-
-    if (typeof goSource === "string" && goSource.includes("APIModel")) {
-      const parsed = parseOpenCodeGoSource(goSource);
-      if (hasSupportData(parsed)) {
-        support = parsed;
-        supportFetched = true;
-        supportFromGithub = true;
-      }
+    const modelsDev = await fetchJson("models.dev", "/api.json");
+    const parsed = parseOpenCodeSupport(modelsDev);
+    if (hasSupportData(parsed)) {
+      support = parsed;
+      supportFetched = true;
+      supportSource = "models.dev";
     }
+  } catch (err: any) {
+    console.log(`  Failed to fetch Models.dev support: ${err.message}`);
+  }
 
-    if (!supportFetched) {
-      // Fallback: try models.dev (broader AI SDK registry, less accurate)
-      const modelsDev = await fetchJson("models.dev", "/api.json");
-      const parsed = parseOpenCodeSupport(modelsDev);
-      if (hasSupportData(parsed)) {
-        support = parsed;
-        supportFetched = true;
-        console.log(
-          "  (used models.dev fallback — may include non-OpenCode models)",
-        );
+  if (!supportFetched) {
+    try {
+      const goSource = await fetchJson(
+        "raw.githubusercontent.com",
+        "/opencode-ai/opencode/main/internal/llm/models/openrouter.go",
+        { raw: true },
+      );
+
+      if (typeof goSource === "string" && goSource.includes("APIModel")) {
+        const parsed = parseOpenCodeGoSource(goSource);
+        if (hasSupportData(parsed)) {
+          support = parsed;
+          supportFetched = true;
+          supportSource = "opencode-github";
+        }
       }
+    } catch (err: any) {
+      console.log(`  Failed to fetch OpenCode source: ${err.message}`);
     }
+  }
 
+  if (supportFetched) {
     console.log(
       `  Found support IDs: nvidia=${support.nvidia.size}, openrouter=${support.openrouter.size}\n`,
     );
-  } catch (err: any) {
-    console.log(`  Failed to fetch OpenCode source: ${err.message}`);
+  } else {
     console.log(
       "  Falling back to existing model-support.json (if present).\n",
     );
@@ -906,6 +938,41 @@ async function main() {
     nvidia_supported: support.nvidia.size,
     openrouter_supported: support.openrouter.size,
   };
+
+  if (OPENCODE_ONLY) {
+    if (!APPLY) {
+      console.log("\n(dry run — pass --apply to write OpenCode support data)");
+    } else {
+      console.log("\n═══ APPLYING OPENCODE SUPPORT ONLY ═══");
+      const supportChanged = applyOpenCodeSupportToRankings(
+        rankings,
+        support,
+      );
+      if (supportChanged) {
+        writeFileSync(RANKINGS_PATH, JSON.stringify(rankings, null, 2) + "\n");
+        report.rankings.changed = true;
+        console.log(`  ✓ Updated ${RANKINGS_PATH}`);
+      } else {
+        console.log("  No ranking support changes to apply.");
+      }
+
+      if (supportFetched || !existsSync(SUPPORT_PATH)) {
+        writeSupportFile(support, supportSource);
+        console.log(`  ✓ Updated ${SUPPORT_PATH}`);
+      }
+    }
+
+    if (REPORT_PATH) {
+      writeFileSync(REPORT_PATH, JSON.stringify(report, null, 2) + "\n");
+      console.log(`\n  ✓ Wrote report: ${REPORT_PATH}`);
+    }
+
+    console.log("\n═══ SUMMARY ═══");
+    console.log(
+      `  OpenCode support:  nvidia=${support.nvidia.size}, openrouter=${support.openrouter.size}`,
+    );
+    return;
+  }
 
   // ── Fetch NIM models ───────────────────────────────────────────────────────
   console.log("Fetching NIM models...");
@@ -1107,20 +1174,9 @@ async function main() {
     }
 
     // Update existing entries with OpenCode support + AA metadata.
+    if (applyOpenCodeSupportToRankings(rankings, support)) changed = true;
     for (const entry of rankings.models) {
       if (entry.source !== "nim" && entry.source !== "openrouter") continue;
-
-      const provider = entry.source === "nim" ? "nvidia" : "openrouter";
-      const supportState = isOpenCodeSupported(
-        provider,
-        entry.model_id,
-        support,
-      );
-      if (supportState !== null && entry.opencode_supported !== supportState) {
-        entry.opencode_supported = supportState;
-        changed = true;
-      }
-
       const aaHit = findAAMeta(entry.model_id, entry.name || "", aaLookup);
       if (mergeAAMeta(entry, aaHit)) changed = true;
     }
@@ -1219,7 +1275,7 @@ async function main() {
     }
 
     if (supportFetched || !existsSync(SUPPORT_PATH)) {
-      writeSupportFile(support, supportFromGithub);
+      writeSupportFile(support, supportSource);
       console.log(`  ✓ Updated ${SUPPORT_PATH}`);
       changed = true;
     }

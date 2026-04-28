@@ -14,7 +14,8 @@
       "aa_price_input": 1,
       "aa_price_output": 3.2,
       "aa_context": "200k",
-      "aa_url": "https://artificialanalysis.ai/models/glm-5"
+      "aa_url": "https://artificialanalysis.ai/models/glm-5",
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -29,7 +30,8 @@
       "aa_price_input": 0.6,
       "aa_price_output": 3,
       "aa_context": "256k",
-      "aa_url": "https://artificialanalysis.ai/models/kimi-k2-5"
+      "aa_url": "https://artificialanalysis.ai/models/kimi-k2-5",
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -44,7 +46,8 @@
       "aa_price_input": 0.6,
       "aa_price_output": 2.2,
       "aa_context": "200k",
-      "aa_url": "https://artificialanalysis.ai/models/glm-4-7"
+      "aa_url": "https://artificialanalysis.ai/models/glm-4-7",
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -59,7 +62,8 @@
       "aa_price_input": 0.6,
       "aa_price_output": 2.5,
       "aa_context": "256k",
-      "aa_url": "https://artificialanalysis.ai/models/kimi-k2-thinking"
+      "aa_url": "https://artificialanalysis.ai/models/kimi-k2-thinking",
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -74,7 +78,8 @@
       "aa_price_input": 0.28,
       "aa_price_output": 0.42,
       "aa_context": "128k",
-      "aa_url": "https://artificialanalysis.ai/models/deepseek-v3-2"
+      "aa_url": "https://artificialanalysis.ai/models/deepseek-v3-2",
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -89,7 +94,8 @@
       "aa_price_input": 0,
       "aa_price_output": 0,
       "aa_context": "256k",
-      "aa_url": "https://artificialanalysis.ai/models/devstral-2"
+      "aa_url": "https://artificialanalysis.ai/models/devstral-2",
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -104,7 +110,8 @@
       "aa_price_input": null,
       "aa_price_output": null,
       "aa_context": "",
-      "aa_url": ""
+      "aa_url": "",
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -119,7 +126,8 @@
       "aa_price_input": 1.5,
       "aa_price_output": 7.5,
       "aa_context": "",
-      "aa_url": "https://artificialanalysis.ai/models/qwen3-coder-480b-a35b-instruct"
+      "aa_url": "https://artificialanalysis.ai/models/qwen3-coder-480b-a35b-instruct",
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -134,7 +142,8 @@
       "aa_price_input": 0,
       "aa_price_output": 0,
       "aa_context": "",
-      "aa_url": "https://artificialanalysis.ai/models/step-3-5-flash"
+      "aa_url": "https://artificialanalysis.ai/models/step-3-5-flash",
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -164,7 +173,8 @@
       "aa_price_input": 0.15,
       "aa_price_output": 0.6,
       "aa_context": "131k",
-      "aa_url": "https://artificialanalysis.ai/models/gpt-oss-120b"
+      "aa_url": "https://artificialanalysis.ai/models/gpt-oss-120b",
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -179,7 +189,8 @@
       "aa_price_input": 0.27,
       "aa_price_output": 1,
       "aa_context": "128k",
-      "aa_url": "https://artificialanalysis.ai/models/deepseek-v3-1-terminus"
+      "aa_url": "https://artificialanalysis.ai/models/deepseek-v3-1-terminus",
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -194,7 +205,8 @@
       "aa_price_input": 0.585,
       "aa_price_output": 2.4,
       "aa_context": "",
-      "aa_url": "https://artificialanalysis.ai/models/kimi-k2"
+      "aa_url": "https://artificialanalysis.ai/models/kimi-k2",
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -209,7 +221,8 @@
       "aa_price_input": 0.585,
       "aa_price_output": 2.4,
       "aa_context": "128k",
-      "aa_url": "https://artificialanalysis.ai/models/kimi-k2"
+      "aa_url": "https://artificialanalysis.ai/models/kimi-k2",
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -224,7 +237,8 @@
       "aa_price_input": 0.35,
       "aa_price_output": 0.85,
       "aa_context": "1m",
-      "aa_url": "https://artificialanalysis.ai/models/llama-4-maverick"
+      "aa_url": "https://artificialanalysis.ai/models/llama-4-maverick",
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -239,7 +253,8 @@
       "aa_price_input": 0.5,
       "aa_price_output": 2,
       "aa_context": "",
-      "aa_url": "https://artificialanalysis.ai/models/qwen3-next-80b-a3b-instruct"
+      "aa_url": "https://artificialanalysis.ai/models/qwen3-next-80b-a3b-instruct",
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -254,7 +269,8 @@
       "aa_price_input": null,
       "aa_price_output": null,
       "aa_context": "",
-      "aa_url": ""
+      "aa_url": "",
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -269,7 +285,8 @@
       "aa_price_input": 0.6,
       "aa_price_output": 3.6,
       "aa_context": "",
-      "aa_url": "https://artificialanalysis.ai/models/qwen3-5-397b-a17b"
+      "aa_url": "https://artificialanalysis.ai/models/qwen3-5-397b-a17b",
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -284,7 +301,8 @@
       "aa_price_input": 0.5,
       "aa_price_output": 1.5,
       "aa_context": "256k",
-      "aa_url": "https://artificialanalysis.ai/models/mistral-large-3"
+      "aa_url": "https://artificialanalysis.ai/models/mistral-large-3",
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -299,7 +317,8 @@
       "aa_price_input": null,
       "aa_price_output": null,
       "aa_context": "",
-      "aa_url": ""
+      "aa_url": "",
+      "opencode_supported": true
     },
     {
       "source": "openrouter",
@@ -315,7 +334,7 @@
       "aa_price_output": null,
       "aa_context": "",
       "aa_url": "",
-      "opencode_supported": false
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -375,7 +394,8 @@
       "aa_price_input": null,
       "aa_price_output": null,
       "aa_context": "",
-      "aa_url": ""
+      "aa_url": "",
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -390,7 +410,8 @@
       "aa_price_input": 2,
       "aa_price_output": 6,
       "aa_context": "",
-      "aa_url": "https://artificialanalysis.ai/models/mistral-large-2"
+      "aa_url": "https://artificialanalysis.ai/models/mistral-large-2",
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -420,7 +441,8 @@
       "aa_price_input": null,
       "aa_price_output": null,
       "aa_context": "",
-      "aa_url": ""
+      "aa_url": "",
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -450,7 +472,8 @@
       "aa_price_input": null,
       "aa_price_output": null,
       "aa_context": "",
-      "aa_url": ""
+      "aa_url": "",
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -465,7 +488,8 @@
       "aa_price_input": 0,
       "aa_price_output": 0,
       "aa_context": "",
-      "aa_url": "https://artificialanalysis.ai/models/llama-3-3-nemotron-super-49b"
+      "aa_url": "https://artificialanalysis.ai/models/llama-3-3-nemotron-super-49b",
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -480,7 +504,8 @@
       "aa_price_input": 0,
       "aa_price_output": 0,
       "aa_context": "",
-      "aa_url": "https://artificialanalysis.ai/models/llama-3-3-nemotron-super-49b"
+      "aa_url": "https://artificialanalysis.ai/models/llama-3-3-nemotron-super-49b",
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -495,7 +520,8 @@
       "aa_price_input": 0,
       "aa_price_output": 0,
       "aa_context": "",
-      "aa_url": "https://artificialanalysis.ai/models/qwen2-5-coder-32b-instruct"
+      "aa_url": "https://artificialanalysis.ai/models/qwen2-5-coder-32b-instruct",
+      "opencode_supported": true
     },
     {
       "source": "openrouter",
@@ -511,7 +537,7 @@
       "aa_price_output": 2,
       "aa_context": "",
       "aa_url": "https://artificialanalysis.ai/models/qwen3-next-80b-a3b-instruct",
-      "opencode_supported": false
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -541,7 +567,8 @@
       "aa_price_input": null,
       "aa_price_output": null,
       "aa_context": "",
-      "aa_url": ""
+      "aa_url": "",
+      "opencode_supported": true
     },
     {
       "source": "openrouter",
@@ -557,7 +584,7 @@
       "aa_price_output": null,
       "aa_context": "",
       "aa_url": "",
-      "opencode_supported": false
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -587,7 +614,8 @@
       "aa_price_input": null,
       "aa_price_output": null,
       "aa_context": "",
-      "aa_url": ""
+      "aa_url": "",
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -602,7 +630,8 @@
       "aa_price_input": null,
       "aa_price_output": null,
       "aa_context": "",
-      "aa_url": ""
+      "aa_url": "",
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -663,7 +692,7 @@
       "aa_price_output": 0.6,
       "aa_context": "131k",
       "aa_url": "https://artificialanalysis.ai/models/gpt-oss-120b",
-      "opencode_supported": false
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -678,7 +707,8 @@
       "aa_price_input": null,
       "aa_price_output": null,
       "aa_context": "",
-      "aa_url": ""
+      "aa_url": "",
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -693,7 +723,8 @@
       "aa_price_input": null,
       "aa_price_output": null,
       "aa_context": "",
-      "aa_url": ""
+      "aa_url": "",
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -708,7 +739,8 @@
       "aa_price_input": null,
       "aa_price_output": null,
       "aa_context": null,
-      "aa_url": ""
+      "aa_url": "",
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -753,7 +785,8 @@
       "aa_price_input": null,
       "aa_price_output": null,
       "aa_context": null,
-      "aa_url": ""
+      "aa_url": "",
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -768,7 +801,8 @@
       "aa_price_input": null,
       "aa_price_output": null,
       "aa_context": "",
-      "aa_url": ""
+      "aa_url": "",
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -799,7 +833,7 @@
       "aa_price_output": null,
       "aa_context": "",
       "aa_url": "",
-      "opencode_supported": false
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -875,7 +909,7 @@
       "aa_price_output": 0.2,
       "aa_context": "131k",
       "aa_url": "https://artificialanalysis.ai/models/gpt-oss-20b",
-      "opencode_supported": false
+      "opencode_supported": true
     },
     {
       "source": "openrouter",
@@ -891,7 +925,7 @@
       "aa_price_output": 0.98,
       "aa_context": "128k",
       "aa_url": "https://artificialanalysis.ai/models/glm-4-5-air",
-      "opencode_supported": false
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -951,7 +985,8 @@
       "aa_price_input": null,
       "aa_price_output": null,
       "aa_context": "",
-      "aa_url": ""
+      "aa_url": "",
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -997,7 +1032,7 @@
       "aa_price_output": null,
       "aa_context": "",
       "aa_url": "",
-      "opencode_supported": false
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -1012,7 +1047,8 @@
       "aa_price_input": 0.05,
       "aa_price_output": 0.195,
       "aa_context": "",
-      "aa_url": "https://artificialanalysis.ai/models/nvidia-nemotron-nano-9b-v2"
+      "aa_url": "https://artificialanalysis.ai/models/nvidia-nemotron-nano-9b-v2",
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -1027,7 +1063,8 @@
       "aa_price_input": null,
       "aa_price_output": null,
       "aa_context": "",
-      "aa_url": ""
+      "aa_url": "",
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -1042,7 +1079,8 @@
       "aa_price_input": null,
       "aa_price_output": null,
       "aa_context": "",
-      "aa_url": ""
+      "aa_url": "",
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -1087,7 +1125,8 @@
       "aa_price_input": 0,
       "aa_price_output": 0,
       "aa_context": "128k",
-      "aa_url": "https://artificialanalysis.ai/models/phi-4-mini"
+      "aa_url": "https://artificialanalysis.ai/models/phi-4-mini",
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -1132,7 +1171,8 @@
       "aa_price_input": null,
       "aa_price_output": null,
       "aa_context": "",
-      "aa_url": ""
+      "aa_url": "",
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -1147,7 +1187,8 @@
       "aa_price_input": null,
       "aa_price_output": null,
       "aa_context": "",
-      "aa_url": ""
+      "aa_url": "",
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -1162,7 +1203,8 @@
       "aa_price_input": null,
       "aa_price_output": null,
       "aa_context": "",
-      "aa_url": ""
+      "aa_url": "",
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -1177,7 +1219,8 @@
       "aa_price_input": 0,
       "aa_price_output": 0,
       "aa_context": "",
-      "aa_url": "https://artificialanalysis.ai/models/gemma-3n-e2b"
+      "aa_url": "https://artificialanalysis.ai/models/gemma-3n-e2b",
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -1192,7 +1235,8 @@
       "aa_price_input": 0.02,
       "aa_price_output": 0.04,
       "aa_context": "",
-      "aa_url": "https://artificialanalysis.ai/models/gemma-3n-e4b"
+      "aa_url": "https://artificialanalysis.ai/models/gemma-3n-e4b",
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -1252,7 +1296,8 @@
       "aa_price_input": null,
       "aa_price_output": null,
       "aa_context": "",
-      "aa_url": ""
+      "aa_url": "",
+      "opencode_supported": true
     },
     {
       "source": "nim",
@@ -1411,7 +1456,7 @@
       "swe_bench": null,
       "tier": "B",
       "context": "33k",
-      "opencode_supported": null,
+      "opencode_supported": true,
       "aa_slug": "gemma-3-12b",
       "aa_intelligence": 8.8,
       "aa_speed_tps": 24.964,
@@ -1443,7 +1488,7 @@
       "swe_bench": null,
       "tier": "S",
       "context": "205k",
-      "opencode_supported": null,
+      "opencode_supported": true,
       "aa_slug": "minimax-m2-5",
       "aa_intelligence": 41.9,
       "aa_speed_tps": 92.802,
@@ -1475,7 +1520,7 @@
       "swe_bench": "60.5%",
       "tier": "S",
       "context": "262k",
-      "opencode_supported": null,
+      "opencode_supported": true,
       "aa_slug": "nvidia-nemotron-3-super-120b-a12b",
       "aa_intelligence": null,
       "aa_speed_tps": 449.5,
@@ -1507,7 +1552,7 @@
       "swe_bench": "60.5%",
       "tier": "S",
       "context": "262k",
-      "opencode_supported": false,
+      "opencode_supported": true,
       "aa_slug": "nvidia-nemotron-3-super-120b-a12b",
       "aa_intelligence": 36,
       "aa_speed_tps": 449.5,
@@ -1523,7 +1568,7 @@
       "swe_bench": null,
       "tier": "S+",
       "context": "33k",
-      "opencode_supported": null,
+      "opencode_supported": true,
       "aa_slug": "deepseek-v4-flash",
       "aa_intelligence": 46.5,
       "aa_speed_tps": 79.265,
@@ -1539,7 +1584,7 @@
       "swe_bench": null,
       "tier": "S+",
       "context": "33k",
-      "opencode_supported": null,
+      "opencode_supported": true,
       "aa_slug": "deepseek-v4-pro",
       "aa_intelligence": 51.5,
       "aa_speed_tps": 35.71,
@@ -1555,7 +1600,7 @@
       "swe_bench": null,
       "tier": "B",
       "context": "33k",
-      "opencode_supported": null,
+      "opencode_supported": true,
       "aa_slug": "gemma-3-27b",
       "aa_intelligence": 10.3,
       "aa_speed_tps": 25.945,
@@ -1571,7 +1616,7 @@
       "swe_bench": null,
       "tier": "S",
       "context": "33k",
-      "opencode_supported": null,
+      "opencode_supported": true,
       "aa_slug": "gemma-4-31b",
       "aa_intelligence": 39.2,
       "aa_speed_tps": 35.459,
@@ -1587,7 +1632,7 @@
       "swe_bench": null,
       "tier": "S+",
       "context": "33k",
-      "opencode_supported": null,
+      "opencode_supported": true,
       "aa_slug": "minimax-m2-7",
       "aa_intelligence": 49.6,
       "aa_speed_tps": 45.51,
@@ -1651,7 +1696,7 @@
       "swe_bench": null,
       "tier": "S+",
       "context": "33k",
-      "opencode_supported": null,
+      "opencode_supported": true,
       "aa_slug": "glm-5-1",
       "aa_intelligence": 51.4,
       "aa_speed_tps": 50.505,
@@ -1699,7 +1744,7 @@
       "swe_bench": null,
       "tier": "S",
       "context": "197k",
-      "opencode_supported": false,
+      "opencode_supported": true,
       "aa_slug": "minimax-m2-5",
       "aa_intelligence": 41.9,
       "aa_speed_tps": 92.802,
@@ -1763,7 +1808,7 @@
       "swe_bench": null,
       "tier": "?",
       "context": "33k",
-      "opencode_supported": false,
+      "opencode_supported": true,
       "aa_slug": "",
       "aa_intelligence": null,
       "aa_speed_tps": null,
@@ -1779,7 +1824,7 @@
       "swe_bench": null,
       "tier": "B",
       "context": "33k",
-      "opencode_supported": false,
+      "opencode_supported": true,
       "aa_slug": "gemma-3-12b",
       "aa_intelligence": 8.8,
       "aa_speed_tps": 24.964,
@@ -1795,7 +1840,7 @@
       "swe_bench": null,
       "tier": "B",
       "context": "131k",
-      "opencode_supported": false,
+      "opencode_supported": true,
       "aa_slug": "gemma-3-27b",
       "aa_intelligence": 10.3,
       "aa_speed_tps": 25.945,
@@ -1811,7 +1856,7 @@
       "swe_bench": null,
       "tier": "C",
       "context": "33k",
-      "opencode_supported": false,
+      "opencode_supported": true,
       "aa_slug": "gemma-3-4b",
       "aa_intelligence": 6.3,
       "aa_speed_tps": 26.071,
@@ -1827,7 +1872,7 @@
       "swe_bench": null,
       "tier": "C",
       "context": "8k",
-      "opencode_supported": false,
+      "opencode_supported": true,
       "aa_slug": "gemma-3n-e2b",
       "aa_intelligence": 4.8,
       "aa_speed_tps": 60.913,
@@ -1843,7 +1888,7 @@
       "swe_bench": null,
       "tier": "B",
       "context": "33k",
-      "opencode_supported": false,
+      "opencode_supported": true,
       "aa_slug": "lfm2-5-1-2b-instruct",
       "aa_intelligence": 8,
       "aa_speed_tps": 0,
@@ -1859,7 +1904,7 @@
       "swe_bench": null,
       "tier": "B",
       "context": "33k",
-      "opencode_supported": false,
+      "opencode_supported": true,
       "aa_slug": "lfm2-5-1-2b-thinking",
       "aa_intelligence": 8.1,
       "aa_speed_tps": 0,
@@ -1875,7 +1920,7 @@
       "swe_bench": null,
       "tier": "B",
       "context": "131k",
-      "opencode_supported": false,
+      "opencode_supported": true,
       "aa_slug": "llama-3-2-instruct-3b",
       "aa_intelligence": 9.7,
       "aa_speed_tps": 51.831,
@@ -1891,7 +1936,7 @@
       "swe_bench": null,
       "tier": "A",
       "context": "131k",
-      "opencode_supported": false,
+      "opencode_supported": true,
       "aa_slug": "hermes-4-llama-3-1-405b-reasoning",
       "aa_intelligence": 18.6,
       "aa_speed_tps": 34.227,
