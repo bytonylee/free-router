@@ -47,7 +47,6 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@inkjs/ui": "^2.0.0",
     "ink": "^7.0.1",
     "react": "^19.2.5"
   },
