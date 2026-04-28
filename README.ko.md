@@ -45,17 +45,6 @@ free-router
 5. **비대화형 최적 모델 선택**
    `free-router --best`로 스크립트에서 사용할 최적 모델 ID를 출력.
 
-## 최초 실행 온보딩을 클린 상태에서 실행하기
-
-실제 설치/설정을 건드리지 않고, 임시 `HOME`에서 완전 초기 상태로 실행하려면:
-
-```bash
-TMP_HOME="$(mktemp -d)"
-HOME="$TMP_HOME" NVIDIA_API_KEY= OPENROUTER_API_KEY= free-router
-```
-
-이렇게 하면 임시 홈에는 `~/.free-router.json` 이 없는 상태로 시작하고, 실제 홈 디렉터리는 그대로 유지됩니다.
-
 ## 프로바이더
 
 | 프로바이더     | 무료 키 발급                                                                         |
@@ -258,47 +247,6 @@ API 키가 최소 하나 이상 설정되어 있어야 합니다. 선택 기준:
 | 🐢 Slow       | 평균 < 3000 ms                 |
 | 🐌 Very Slow  | 평균 < 5000 ms                 |
 | 💀 Unusable   | 평균 ≥ 5000 ms                 |
-
-## 검증
-
-```bash
-npm run lint
-npm run typecheck
-npm run build
-```
-
-## 엔지니어링 워크플로
-
-`dev`/`main` 브랜치 전략, SemVer 규칙, PR/이슈 정책, 릴리스 태그(`cli-v*`, `site-v*`)는
-[`docs/release-governance.md`](./docs/release-governance.md)에서 확인할 수 있습니다.
-
-## 모델 카탈로그 자동 동기화 (GitHub Actions)
-
-`free-router`는 모델 메타데이터를 최신 상태로 유지하기 위한 스케줄 워크플로를 포함합니다.
-
-- 워크플로: `.github/workflows/model-catalog-sync.yml`
-- 실행 트리거:
-  - 매일: `17 3 * * *` (UTC)
-  - 주간 AA 갱신: `47 4 * * 1` (UTC)
-  - 수동 실행: `workflow_dispatch`
-- 업데이트 대상:
-  - `model-rankings.json`
-  - `model-support.json` (OpenCode 지원 모델 맵)
-- 변경사항이 있으면 `chore/model-catalog-sync` 브랜치 PR을 생성/업데이트합니다.
-- 신규 모델 tier가 미해결이면 PR에 `needs-tier-review` 라벨이 붙습니다.
-
-워크플로에서 사용하는 저장소 시크릿:
-
-- `NVIDIA_API_KEY`
-- `OPENROUTER_API_KEY`
-- `ARTIFICIAL_ANALYSIS_API_KEY`
-
-로컬 동기화 명령:
-
-```bash
-npm run models:sync
-npm run models:sync:apply
-```
 
 ## 개발 노트
 

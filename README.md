@@ -45,17 +45,6 @@ restarts automatically, so you can continue without running `free-router` again.
 5. **Non-interactive best-model selection**
    Run `free-router --best` to print the best responding model ID for scripts.
 
-## First-run onboarding from a clean state
-
-Use an isolated temporary `HOME` if you want to try onboarding from zero without touching your real config:
-
-```bash
-TMP_HOME="$(mktemp -d)"
-HOME="$TMP_HOME" NVIDIA_API_KEY= OPENROUTER_API_KEY= free-router
-```
-
-This starts with no `~/.free-router.json` in the temp home and leaves your real home directory untouched.
-
 ## Providers
 
 | Provider       | Free key                                                                             |
@@ -258,47 +247,6 @@ Stored at `~/.free-router.json` (permissions `0600`).
 | 🐢 Slow       | Avg < 3000 ms             |
 | 🐌 Very Slow  | Avg < 5000 ms             |
 | 💀 Unusable   | Avg ≥ 5000 ms             |
-
-## Validation
-
-```bash
-npm run lint
-npm run typecheck
-npm run build
-```
-
-## Engineering workflow
-
-For branch strategy (`dev`/`main`), SemVer rules, PR/issue governance, and release tags
-(`cli-v*`, `site-v*`), see [`docs/release-governance.md`](./docs/release-governance.md).
-
-## Model catalog auto-sync (GitHub Actions)
-
-`free-router` includes a scheduled workflow to keep model metadata current:
-
-- Workflow: `.github/workflows/model-catalog-sync.yml`
-- Triggers:
-  - Daily: `17 3 * * *` (UTC)
-  - Weekly AA refresh: `47 4 * * 1` (UTC)
-  - Manual: `workflow_dispatch`
-- Updates:
-  - `model-rankings.json`
-  - `model-support.json` (OpenCode support map)
-- If changes exist, it opens/updates a PR on `chore/model-catalog-sync`.
-- If unresolved new-model tiers remain, PR gets `needs-tier-review`.
-
-Repository secrets used by this workflow:
-
-- `NVIDIA_API_KEY`
-- `OPENROUTER_API_KEY`
-- `ARTIFICIAL_ANALYSIS_API_KEY`
-
-Local sync commands:
-
-```bash
-npm run models:sync
-npm run models:sync:apply
-```
 
 ## Development notes
 
