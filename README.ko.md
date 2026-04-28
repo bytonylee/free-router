@@ -82,7 +82,7 @@ FREE_ROUTER_METRICS_CACHE=0 free-router
 | `Avg`      | HTTP 200 응답만을 기준으로 한 평균 응답 속도           |
 | `Lat`      | 마지막으로 측정된 핑 응답 속도                         |
 | `Up%`      | 현재 세션 가동률                                       |
-| `Verdict`  | 상태 요약 (🚀 Perfect / ✅ Normal / 🔥 Overloaded / …) |
+| `Verdict`  | 상태 요약 (✓ Perfect / ✓ Normal / x Overloaded / …)    |
 
 기본 정렬 기준: **응답 가능 모델 우선**, 그 다음 **높은 등급 우선** (S+ → S → A+ …), 그 다음 낮은 응답 속도.
 
@@ -236,17 +236,17 @@ API 키가 최소 하나 이상 설정되어 있어야 합니다. 선택 기준:
 
 ## 상태 요약 (Verdict)
 
-| 상태          | 조건                           |
-| ------------- | ------------------------------ |
-| 🔥 Overloaded | 마지막 HTTP 코드 = 429         |
-| ⚠️ Unstable   | 이전엔 응답했으나 현재 실패 중 |
-| 👻 Not Active | 한 번도 응답하지 않음          |
-| ⏳ Pending    | 첫 번째 성공 응답 대기 중      |
-| 🚀 Perfect    | 평균 < 400 ms                  |
-| ✅ Normal     | 평균 < 1000 ms                 |
-| 🐢 Slow       | 평균 < 3000 ms                 |
-| 🐌 Very Slow  | 평균 < 5000 ms                 |
-| 💀 Unusable   | 평균 ≥ 5000 ms                 |
+| 상태         | 조건                           |
+| ------------ | ------------------------------ |
+| x Overloaded | 마지막 HTTP 코드 = 429         |
+| x Unstable   | 이전엔 응답했으나 현재 실패 중 |
+| x Not Active | 한 번도 응답하지 않음          |
+| - Pending    | 첫 번째 성공 응답 대기 중      |
+| ✓ Perfect    | 평균 < 400 ms                  |
+| ✓ Normal     | 평균 < 1000 ms                 |
+| x Slow       | 평균 < 3000 ms                 |
+| x Very Slow  | 평균 < 5000 ms                 |
+| x Unusable   | 평균 ≥ 5000 ms                 |
 
 ## 개발 노트
 

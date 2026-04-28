@@ -82,7 +82,7 @@ The interactive TUI pings all models in parallel every 2 seconds and shows live 
 | `Avg`      | Rolling average latency (HTTP 200 only)                        |
 | `Lat`      | Latest measured ping latency                                   |
 | `Up%`      | Uptime percentage this session                                 |
-| `Verdict`  | Condition summary (🚀 Perfect / ✅ Normal / 🔥 Overloaded / …) |
+| `Verdict`  | Condition summary (✓ Perfect / ✓ Normal / x Overloaded / …)    |
 
 Default ranking: **availability first**, then **higher tier first** (S+ → S → A+ …), then lower latency.
 
@@ -236,17 +236,17 @@ Stored at `~/.free-router.json` (permissions `0600`).
 
 ## Verdict legend
 
-| Verdict       | Trigger                   |
-| ------------- | ------------------------- |
-| 🔥 Overloaded | Last HTTP code = 429      |
-| ⚠️ Unstable   | Was up, now failing       |
-| 👻 Not Active | Never responded           |
-| ⏳ Pending    | Waiting for first success |
-| 🚀 Perfect    | Avg < 400 ms              |
-| ✅ Normal     | Avg < 1000 ms             |
-| 🐢 Slow       | Avg < 3000 ms             |
-| 🐌 Very Slow  | Avg < 5000 ms             |
-| 💀 Unusable   | Avg ≥ 5000 ms             |
+| Verdict      | Trigger                   |
+| ------------ | ------------------------- |
+| x Overloaded | Last HTTP code = 429      |
+| x Unstable   | Was up, now failing       |
+| x Not Active | Never responded           |
+| - Pending    | Waiting for first success |
+| ✓ Perfect    | Avg < 400 ms              |
+| ✓ Normal     | Avg < 1000 ms             |
+| x Slow       | Avg < 3000 ms             |
+| x Very Slow  | Avg < 5000 ms             |
+| x Unusable   | Avg ≥ 5000 ms             |
 
 ## Development notes
 

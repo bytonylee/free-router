@@ -411,15 +411,26 @@ function tableSeparatorLine(): string {
   return fullWidthLine(`${D}${"─".repeat(Math.max(0, cols() - WRAP_GUARD_COLS))}${R}`);
 }
 
+function tableRowStyle(selected: boolean): string {
+  return selected ? `${BG_SEL}${WHITE}${B}` : WHITE;
+}
+
 function tableRowLine(
   values: Record<TableColumn["key"], string>,
   selected: boolean,
 ): string {
-  const rowStyle = selected ? `${BG_SEL}${WHITE}${B}` : WHITE;
+  const rowStyle = tableRowStyle(selected);
   const cells = TABLE_COLUMNS.map((col) =>
     tableCell(values[col.key], col.width, rowStyle, col.right),
   );
   return tableLine(cells);
+}
+
+function formatVerdict(verdict: string, selected: boolean): string {
+  const rowStyle = tableRowStyle(selected);
+  if (verdict.startsWith("✓ ")) return `${GREEN}✓${R}${rowStyle}${verdict.slice(1)}`;
+  if (verdict.startsWith("x ")) return `${RED}x${R}${rowStyle}${verdict.slice(1)}`;
+  return verdict;
 }
 
 function selectedRankMarker(rankText: string): string {
@@ -677,7 +688,7 @@ function renderMain() {
       const up = getUptime(m);
       const upStr = uptimeColor(up) + fmtUp(up, m.pings.length > 0) + R;
       const dot = statusDot(m);
-      const verdict = `${dot} ${getVerdict(m)}`;
+      const verdict = `${dot} ${formatVerdict(getVerdict(m), isSel)}`;
       const aaStr =
         m.aaIntelligence != null
           ? String(Math.round(m.aaIntelligence)).padStart(3)
