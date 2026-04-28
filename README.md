@@ -54,28 +54,16 @@ restarts automatically, so you can continue without running `free-router` again.
 5. **Non-interactive best-model selection**
    Run `free-router --best` to print the best responding model ID for scripts.
 
-## First-run onboarding test (clean state)
+## First-run onboarding from a clean state
 
-Use an isolated temporary `HOME` to test onboarding from zero without deleting your real install/config:
-
-```bash
-npm run test:onboarding
-npm run test:fresh-start
-```
-
-`test:fresh-start` launches interactive onboarding with:
-
-- no `~/.free-router.json` in the temp home
-- provider env keys unset (`NVIDIA_API_KEY`, `OPENROUTER_API_KEY`)
-- your real `~/.free-router.json` untouched
-
-Optional:
+Use an isolated temporary `HOME` if you want to try onboarding from zero without touching your real config:
 
 ```bash
-npm run test:fresh-start -- --keep-home
+TMP_HOME="$(mktemp -d)"
+HOME="$TMP_HOME" NVIDIA_API_KEY= OPENROUTER_API_KEY= free-router
 ```
 
-This keeps the temp `HOME` path after exit for inspection.
+This starts with no `~/.free-router.json` in the temp home and leaves your real home directory untouched.
 
 ## Providers
 
@@ -276,16 +264,12 @@ Stored at `~/.free-router.json` (permissions `0600`).
 | 🐌 Very Slow  | Avg < 5000 ms             |
 | 💀 Unusable   | Avg ≥ 5000 ms             |
 
-## Test
+## Validation
 
 ```bash
 npm run lint
-npm test
 npm run typecheck
-
-# optional perf workflow
-npm run perf:baseline
-npm run test:perf
+npm run build
 ```
 
 ## Engineering workflow
@@ -323,10 +307,9 @@ npm run models:sync:apply
 
 ## Development notes
 
-- TypeScript source of truth: `src/` (app + tests)
+- TypeScript source of truth: `src/`
 - ESLint config is TypeScript: `eslint.config.ts`
 - Runtime JS output is generated only in `dist/` via `npm run build`
-- Tests run from compiled `dist/tests/` output after build
 
 ## License
 

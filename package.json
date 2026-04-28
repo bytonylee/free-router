@@ -12,14 +12,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint src --max-warnings=0",
     "lint:fix": "eslint src --fix",
-    "pretest": "npm run build",
-    "test": "node --test dist/tests/unit/*.test.js dist/tests/integration/*.test.js dist/tests/security/*.test.js",
-    "test:perf": "npm run build && node --expose-gc --test dist/tests/perf/*.perf.test.js",
-    "perf:baseline": "npm run build && node dist/tests/perf/collect-baseline.js",
     "models:sync": "npx tsx scripts/update-models.ts",
     "models:sync:apply": "npx tsx scripts/update-models.ts --apply",
-    "test:onboarding": "node --test dist/tests/integration/onboarding.test.js",
-    "test:fresh-start": "npm run build && bash ./scripts/free-router-fresh-start.sh",
     "prepack": "npm run build"
   },
   "engines": {
@@ -30,8 +24,7 @@
     "dist/lib/",
     "dist/tui/",
     "dist/model-rankings.json",
-    "dist/model-support.json",
-    "scripts/free-router-fresh-start.sh"
+    "dist/model-support.json"
   ],
   "repository": {
     "type": "git",

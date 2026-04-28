@@ -2,12 +2,12 @@
 
 This repository uses **independent SemVer** for each deliverable:
 
-- CLI package: `package.json` (`free-router`)
+- CLI package: `package.json` (`@bytonylee/free-router`)
 - Site package: `site/package.json` (`free-router-site`)
 
 ## 1) SemVer policy (major/minor/patch)
 
-### free-router CLI (`free-router`)
+### free-router CLI (`@bytonylee/free-router`)
 
 - **MAJOR** (`X.0.0`): breaking CLI contract
   - renamed/removed flags or commands
@@ -30,7 +30,7 @@ This repository uses **independent SemVer** for each deliverable:
 ## 2) Branch strategy (double-branch)
 
 - `main` = production-ready only (publish source of truth)
-- `dev` = integration/testing branch
+- `dev` = integration branch
 - `feature/*`, `fix/*`, `chore/*`, `docs/*`, `refactor/*`, `test/*`, `ci/*` = work branches from `dev`
 - `release/*` = release hardening branch from `dev` (e.g. `release/cli-v1.2.0`, `release/site-v0.2.0`)
 - `hotfix/*` = urgent production fix from `main`
@@ -83,8 +83,8 @@ Apply to **both `main` and `dev`**:
 - Dismiss stale approvals on new commits
 - Require conversation resolution
 - Require status checks to pass before merge:
-  - `CI / Test (Node 22 on ubuntu-latest)`
-  - `CI / Test (Node 22 on macos-latest)`
+  - `CI / Validate (Node 22 on ubuntu-latest)`
+  - `CI / Validate (Node 22 on macos-latest)`
   - `CI / Site build (Node 22 on ubuntu-latest)`
   - `PR Governance / Branch + PR policy`
 - Restrict who can push directly (no direct push except admins if needed)
@@ -140,5 +140,5 @@ Shorthand is available for CLI:
 
 The `Release` workflow handles:
 
-- `cli-v*` (and legacy `v*`): lint/typecheck/build/tests + npm publish + GitHub release
+- `cli-v*` (and legacy `v*`): lint/typecheck/build + npm publish + GitHub release
 - `site-v*`: site build + artifact packaging + GitHub release

@@ -54,28 +54,16 @@ free-router
 5. **비대화형 최적 모델 선택**
    `free-router --best`로 스크립트에서 사용할 최적 모델 ID를 출력.
 
-## 최초 실행 온보딩 테스트 (클린 상태)
+## 최초 실행 온보딩을 클린 상태에서 실행하기
 
-실제 설치/설정을 지우지 않고, 임시 `HOME`에서 완전 초기 상태 온보딩을 테스트할 수 있습니다.
-
-```bash
-npm run test:onboarding
-npm run test:fresh-start
-```
-
-`test:fresh-start` 실행 시:
-
-- 임시 홈에 `~/.free-router.json` 이 없는 상태로 시작
-- 프로바이더 환경 변수 키(`NVIDIA_API_KEY`, `OPENROUTER_API_KEY`) 비활성화
-- 실제 `~/.free-router.json` 은 변경하지 않음
-
-옵션:
+실제 설치/설정을 건드리지 않고, 임시 `HOME`에서 완전 초기 상태로 실행하려면:
 
 ```bash
-npm run test:fresh-start -- --keep-home
+TMP_HOME="$(mktemp -d)"
+HOME="$TMP_HOME" NVIDIA_API_KEY= OPENROUTER_API_KEY= free-router
 ```
 
-종료 후 임시 `HOME` 디렉터리를 유지하여 결과 파일을 확인할 수 있습니다.
+이렇게 하면 임시 홈에는 `~/.free-router.json` 이 없는 상태로 시작하고, 실제 홈 디렉터리는 그대로 유지됩니다.
 
 ## 프로바이더
 
@@ -276,16 +264,12 @@ API 키가 최소 하나 이상 설정되어 있어야 합니다. 선택 기준:
 | 🐌 Very Slow  | 평균 < 5000 ms                 |
 | 💀 Unusable   | 평균 ≥ 5000 ms                 |
 
-## 테스트
+## 검증
 
 ```bash
 npm run lint
-npm test
 npm run typecheck
-
-# 선택: 성능 기준선/회귀 테스트
-npm run perf:baseline
-npm run test:perf
+npm run build
 ```
 
 ## 엔지니어링 워크플로
@@ -323,10 +307,9 @@ npm run models:sync:apply
 
 ## 개발 노트
 
-- 소스 오브 트루스는 TypeScript `src/` (앱 + 테스트) 입니다.
+- 소스 오브 트루스는 TypeScript `src/` 입니다.
 - ESLint 설정도 TypeScript 파일(`eslint.config.ts`)로 관리합니다.
 - 런타임 JavaScript는 `npm run build` 시 `dist/`에만 생성됩니다.
-- 테스트는 빌드 후 `dist/tests/` 산출물을 기준으로 실행됩니다.
 
 ## 라이선스
 
