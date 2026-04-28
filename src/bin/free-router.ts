@@ -534,6 +534,16 @@ function renderSearchLines(stats: string, tierBar: string): string[] {
   return blockWidthLines(searchField, right, `${WHITE}${B}`);
 }
 
+function renderSelectedModelLine(): string {
+  const sel = filtered[cursor];
+  if (!sel) return fullWidthLine("");
+
+  const fullId = `${sel.providerKey}/${sel.id}`;
+  const sweStr = sel.sweScore != null ? `  SWE:${sel.sweScore}%` : "";
+  const ctxStr = sel.context ? `  ctx:${fmtCtx(sel.context).trim()}` : "";
+  return fullWidthLine(`${D} Selected: ${fullId}${sweStr}${ctxStr}${R}`);
+}
+
 // ─── Main TUI ──────────────────────────────────────────────────────────────────
 function renderMain() {
   const { c, r } = viewport();
@@ -569,6 +579,9 @@ function renderMain() {
 
   // Search + stats bar
   for (const line of renderSearchLines(stats, tierBar)) out += line + "\n";
+
+  // Selected model detail
+  out += renderSelectedModelLine() + "\n";
 
   // Column headers with sort indicators
   out += tableHeaderLine() + "\n";
@@ -641,17 +654,6 @@ function renderMain() {
         ) + "\n";
     }
   } // end if (!isLoading)
-
-  // Detail bar — full model ID of highlighted model
-  const sel = filtered[cursor];
-  if (sel) {
-    const fullId = `${sel.providerKey}/${sel.id}`;
-    const sweStr = sel.sweScore != null ? `  SWE:${sel.sweScore}%` : "";
-    const ctxStr = sel.context ? `  ctx:${fmtCtx(sel.context).trim()}` : "";
-    out += fullWidthLine(`${D} ${fullId}${sweStr}${ctxStr}${R}`) + "\n";
-  } else {
-    out += fullWidthLine("") + "\n";
-  }
 
   // Footer
   const footer = ` ↑↓/jk:nav  /:focus model search  Enter:open opencode  A:api key  P:settings  T:tier  ?:help  0-9:sort  q:quit `;
