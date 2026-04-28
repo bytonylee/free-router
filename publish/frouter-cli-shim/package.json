@@ -1,13 +1,13 @@
 {
   "name": "frouter-cli",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "DEPRECATED — moved to @bytonylee/free-router. This shim re-execs the new package for backward compatibility.",
   "type": "module",
   "bin": {
     "free-router": "bin.js"
   },
   "dependencies": {
-    "@bytonylee/free-router": "^1.2.0"
+    "@bytonylee/free-router": "^1.2.1"
   },
   "engines": {
     "node": ">=22.0.0"

@@ -1,6 +1,6 @@
 [English](./README.md) | [한국어](./README.ko.md)
 
-![Version](https://img.shields.io/badge/version-1.2.0-333333?style=flat-square)
+![Version](https://img.shields.io/badge/version-1.2.1-333333?style=flat-square)
 [![License: MIT License](https://img.shields.io/badge/License-MIT%20License-yellow.svg)](./LICENSE)
 [![npm downloads](https://img.shields.io/npm/dm/%40bytonylee%2Ffree-router)](https://www.npmjs.com/package/@bytonylee/free-router)
 [![CI](https://github.com/bytonylee/free-router/actions/workflows/ci.yml/badge.svg)](https://github.com/bytonylee/free-router/actions/workflows/ci.yml)

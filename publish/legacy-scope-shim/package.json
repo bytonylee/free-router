@@ -7,7 +7,7 @@
     "free-router": "bin.js"
   },
   "dependencies": {
-    "@bytonylee/free-router": "^1.2.0"
+    "@bytonylee/free-router": "^1.2.1"
   },
   "engines": {
     "node": ">=22.0.0"
