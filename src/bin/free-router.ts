@@ -64,7 +64,6 @@ import { fileURLToPath } from "node:url";
 import { basename, dirname } from "node:path";
 import { get as httpsGet } from "node:https";
 import { get as httpGet } from "node:http";
-import ora from "ora";
 
 import { createRequire } from "node:module";
 
@@ -91,6 +90,10 @@ const BG_OFF = "\x1b[48;5;238m";
 const GRAY = "\x1b[90m";
 const ALT_ON = "\x1b[?1049h";
 const ALT_OFF = "\x1b[?1049l";
+const FOCUS_EVENTS_ON = "\x1b[?1004h";
+const FOCUS_EVENTS_OFF = "\x1b[?1004l";
+const FOCUS_IN = "\x1b[I";
+const FOCUS_OUT = "\x1b[O";
 const ALLOW_PLAINTEXT_KEY_EXPORT =
   readEnv(
     "FREE_ROUTER_EXPORT_PLAINTEXT_KEYS",
@@ -180,8 +183,8 @@ let userScrollSortPauseMs = DEFAULT_USER_SCROLL_SORT_PAUSE_MS;
 let renderAuthorityViolations = 0;
 let starPromptHandledThisLaunch = false;
 let startupSearchRequestedThisLaunch = false;
-const choiceSpinner = ora({ spinner: "dots", color: false, isEnabled: false });
-let choiceSpinnerTimer: ReturnType<typeof setInterval> | null = null;
+let terminalFocused = true;
+let renderDeferredWhileBlurred = false;
 
 // ─── Geometry ──────────────────────────────────────────────────────────────────
 const DEFAULT_COLS = 80;
@@ -442,7 +445,7 @@ function formatVerdict(verdict: string, selected: boolean): string {
 }
 
 function selectedRankMarker(rankText: string): string {
-  return `${YELLOW}${B}${choiceSpinner.frame().trimEnd()} ${rankText}${R}`;
+  return `${YELLOW}${B}> ${rankText}${R}`;
 }
 
 // Truncate a string with ANSI codes to at most `maxVis` visible columns.
@@ -851,9 +854,9 @@ const ALLOWED_RENDER_REASONS = new Set([
   "refresh-complete",
   "onPingTick",
   "round-complete",
-  "selection-spinner",
   "timed-return",
   "throttled",
+  "focus-in",
 ]);
 
 function renderWithAuthority(reason: string) {
@@ -862,6 +865,10 @@ function renderWithAuthority(reason: string) {
     const msg = `[free-router] non-authoritative render attempt: ${reason}\n`;
     if (STRICT_RENDER_AUTH) throw new Error(msg.trim());
     process.stderr.write(msg);
+  }
+  if (!terminalFocused) {
+    renderDeferredWhileBlurred = true;
+    return;
   }
   render();
 }
@@ -1506,6 +1513,21 @@ function dispatch(ch: string) {
     process.exit(0);
   }
 
+  if (ch === FOCUS_IN) {
+    terminalFocused = true;
+    if (renderDeferredWhileBlurred) {
+      renderDeferredWhileBlurred = false;
+      renderWithAuthority("focus-in");
+    }
+    return;
+  }
+
+  if (ch === FOCUS_OUT) {
+    terminalFocused = false;
+    renderDeferredWhileBlurred = false;
+    return;
+  }
+
   if (screen === "help") {
     screen = "main";
     renderWithAuthority("help-close");
@@ -1581,21 +1603,6 @@ function restartLoop() {
   );
 }
 
-function startChoiceSpinnerLoop() {
-  if (choiceSpinnerTimer) return;
-  choiceSpinnerTimer = setInterval(() => {
-    if (screen === "main" && filtered.length > 0) {
-      renderWithAuthority("selection-spinner");
-    }
-  }, choiceSpinner.interval);
-}
-
-function stopChoiceSpinnerLoop() {
-  if (!choiceSpinnerTimer) return;
-  clearInterval(choiceSpinnerTimer);
-  choiceSpinnerTimer = null;
-}
-
 // ─── Ink sub-app lifecycle helpers ─────────────────────────────────────────────
 // Used by runInkSubApp hooks to safely transition between raw ANSI and Ink rendering.
 
@@ -1611,14 +1618,15 @@ function prepareForInkSubApp() {
     _renderTimer = null;
   }
   screen = "ink-subapp";
-  stopChoiceSpinnerLoop();
   stopPingLoop(pingRef);
   // Don't change raw mode — the harness manages stdin via a proxy stream.
-  w(ALT_OFF + SHOWC);
+  w(FOCUS_EVENTS_OFF + ALT_OFF + SHOWC);
 }
 
 function restoreAfterInkSubApp(returnScreen = "main") {
-  w(ALT_ON + HIDEC);
+  terminalFocused = true;
+  renderDeferredWhileBlurred = false;
+  w(ALT_ON + FOCUS_EVENTS_ON + HIDEC);
   // The harness manages stdin directly (proxy pattern), so process.stdin
   // is still in raw/flowing/data-listener mode from prepareForInkSubApp's teardown.
   // We just need to re-attach our handler and restore raw mode.
@@ -1631,7 +1639,6 @@ function restoreAfterInkSubApp(returnScreen = "main") {
   process.stdin.on("data", onData);
   process.stdin.resume();
   screen = returnScreen;
-  if (returnScreen === "main") startChoiceSpinnerLoop();
   renderWithAuthority("settings-exit");
 }
 
@@ -1915,7 +1922,6 @@ async function checkForUpdate(): Promise<void> {
 
 // ─── Cleanup ───────────────────────────────────────────────────────────────────
 function cleanup() {
-  stopChoiceSpinnerLoop();
   stopPingLoop(pingRef);
   destroyAgents();
   if (renderAuthorityViolations > 0) {
@@ -1923,7 +1929,7 @@ function cleanup() {
       `[free-router] render authority violations: ${renderAuthorityViolations}\n`,
     );
   }
-  w(SHOWC + ALT_OFF);
+  w(FOCUS_EVENTS_OFF + SHOWC + ALT_OFF);
   try {
     if (process.stdin.isTTY) process.stdin.setRawMode(false);
   } catch {
@@ -1931,7 +1937,7 @@ function cleanup() {
   }
 }
 
-process.on("exit", () => w(SHOWC + ALT_OFF));
+process.on("exit", () => w(FOCUS_EVENTS_OFF + SHOWC + ALT_OFF));
 
 // ─── --best mode ───────────────────────────────────────────────────────────────
 async function runBest() {
@@ -2007,12 +2013,13 @@ async function main() {
     process.exit(1);
   }
 
-  w(ALT_ON);
+  terminalFocused = true;
+  renderDeferredWhileBlurred = false;
+  w(ALT_ON + FOCUS_EVENTS_ON);
   process.stdin.setRawMode(true);
   process.stdin.resume();
   process.stdin.setEncoding("utf8");
   process.stdin.on("data", onData);
-  startChoiceSpinnerLoop();
 
   const onSignal = () => {
     cleanup();
