@@ -82,6 +82,10 @@ const SHOWC = "\x1b[?25h";
 const INVERT = "\x1b[7m";
 const BG_HDR = "\x1b[48;5;17m";
 const BG_SEARCH = "\x1b[48;5;235m";
+const BG_OK = "\x1b[48;5;22m";
+const BG_WARN = "\x1b[48;5;58m";
+const BG_BAD = "\x1b[48;5;52m";
+const BG_OFF = "\x1b[48;5;238m";
 const GRAY = "\x1b[90m";
 const ALT_ON = "\x1b[?1049h";
 const ALT_OFF = "\x1b[?1049l";
@@ -412,13 +416,28 @@ function topAlertLine(): string | null {
   return null;
 }
 
+function providerStatusTag(providerKey: string, label: string): string {
+  const on = config.providers?.[providerKey]?.enabled !== false;
+  if (!on) return `${BG_OFF}${WHITE} ${label} OFF ${R}`;
+
+  const key = getApiKey(config, providerKey);
+  if (!key) return `${BG_WARN}${WHITE}${B} ${label} NO KEY ${R}`;
+  if (isProviderKeyRejected(providerKey)) {
+    return `${BG_BAD}${WHITE}${B} ${label} WRONG KEY ${R}`;
+  }
+  return `${BG_OK}${WHITE}${B} ${label} READY ${R}`;
+}
+
 function renderSearchLines(stats: string, tierBar: string): string[] {
   const input = searchMode
     ? `${CYAN}/${searchQuery}_${R}`
     : `${GRAY}Press / to search models${R}`;
   const hint = searchMode ? "ESC clear  Enter apply" : "/ start";
   const searchField = `${BG_SEARCH}${WHITE}${B} Model Search ${R} ${input}`;
-  const right = `${tierBar}${stats}  ${D}${hint}${R}`;
+  const providerTags = Object.entries(PROVIDERS_META)
+    .map(([pk, meta]) => providerStatusTag(pk, meta.name))
+    .join(" ");
+  const right = `${providerTags}  ${tierBar}${stats}  ${D}${hint}${R}`;
   return blockWidthLines(searchField, right, `${WHITE}${B}`);
 }
 
