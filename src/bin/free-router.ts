@@ -568,7 +568,7 @@ function renderSelectedModelLine(): string {
   const fullId = `${sel.providerKey}/${sel.id}`;
   const sweStr = sel.sweScore != null ? `  SWE:${sel.sweScore}%` : "";
   const ctxStr = sel.context ? `  ctx:${fmtCtx(sel.context).trim()}` : "";
-  return centeredWidthLine(`${D}Selected model: ${fullId}${sweStr}${ctxStr}${R}`);
+  return fullWidthLine(`${D} Selected model: ${fullId}${sweStr}${ctxStr}${R}`);
 }
 
 function footerKey(key: string, label: string): string {
