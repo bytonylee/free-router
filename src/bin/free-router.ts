@@ -611,7 +611,7 @@ function renderFooterLines(): string[] {
 }
 
 function modeTagLine(label: string): string {
-  return rightWidthLine(`${BG_OFF}${WHITE} ${label} ${R}`);
+  return fullWidthLine(`${BG_OFF}${WHITE} ${label} ${R}`);
 }
 
 function modalFooterLine(items: Array<[string, string]>, lastLine = true): string {
@@ -738,7 +738,7 @@ function renderMain() {
 function renderHelp() {
   const sortLines = SORT_COLS.map((s) => {
     const active = sortCol === s.col ? ` ${CYAN}← active${R}` : "";
-    return `  ${s.key}           ${s.label}${active}`;
+    return `${WHITE}  ${s.key}           ${s.label}${active}${R}`;
   }).join("\n");
 
   w(
@@ -746,22 +746,22 @@ function renderHelp() {
       HIDEC +
       modeTagLine("HELP") +
       "\n\n" +
-      `${B}  Navigation${R}\n` +
-      `  ↑ / k       Move up\n` +
-      `  ↓ / j       Move down\n` +
-      `  PgUp        Page up\n` +
-      `  PgDn        Page down\n` +
-      `  g           Jump to top\n` +
-      `  G           Jump to bottom\n\n` +
-      `${B}  Actions${R}\n` +
-      `  Enter       Save config + open current model in opencode\n` +
-      `  /           Toggle model search (Enter opens opencode)\n` +
-      `  A           Quick API key add/change (opens key editor)\n` +
-      `  R           Change API key (auto-detects rejected provider)\n` +
-      `  T           Cycle tier filter (All → S+ → S → …)\n` +
-      `  W / X       Faster / slower ping interval\n` +
-      `  q           Quit\n\n` +
-      `${B}  Sort (press key to sort, press again to reverse)${R}\n` +
+      `${WHITE}${B}  Navigation${R}\n` +
+      `${WHITE}  ↑ / k       Move up${R}\n` +
+      `${WHITE}  ↓ / j       Move down${R}\n` +
+      `${WHITE}  PgUp        Page up${R}\n` +
+      `${WHITE}  PgDn        Page down${R}\n` +
+      `${WHITE}  g           Jump to top${R}\n` +
+      `${WHITE}  G           Jump to bottom${R}\n\n` +
+      `${WHITE}${B}  Actions${R}\n` +
+      `${WHITE}  Enter       Save config + open current model in opencode${R}\n` +
+      `${WHITE}  /           Toggle model search (Enter opens opencode)${R}\n` +
+      `${WHITE}  A           Quick API key add/change (opens key editor)${R}\n` +
+      `${WHITE}  R           Change API key (auto-detects rejected provider)${R}\n` +
+      `${WHITE}  T           Cycle tier filter (All → S+ → …)${R}\n` +
+      `${WHITE}  W / X       Faster / slower ping interval${R}\n` +
+      `${WHITE}  q           Quit${R}\n\n` +
+      `${WHITE}${B}  Sort (press key to sort, press again to reverse)${R}\n` +
       sortLines +
       "\n" +
       "\n" +
