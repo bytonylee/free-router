@@ -64,6 +64,11 @@ const I18N: Record<string, Record<string, string>> = {
     "install.npxBody": "one-shot run via npx",
     "install.globalTitle": "Global",
     "install.globalBody": "pin to your machine",
+    "usage.label": "Usage",
+    "usage.pickTitle": "Open",
+    "usage.pickBody": "pick a model and launch OpenCode",
+    "usage.bestTitle": "Best model",
+    "usage.bestBody": "print the top free model id",
     "models.label": "Models",
     "models.lede":
       "Every free model the router can reach right now, ranked by public benchmark signals.",
@@ -94,6 +99,11 @@ const I18N: Record<string, Record<string, string>> = {
     "install.npxBody": "npx로 한 줄 실행",
     "install.globalTitle": "전역",
     "install.globalBody": "내 머신에 고정 설치",
+    "usage.label": "사용법",
+    "usage.pickTitle": "실행",
+    "usage.pickBody": "모델을 고르고 OpenCode 실행",
+    "usage.bestTitle": "최고 모델",
+    "usage.bestBody": "최상위 무료 모델 ID 출력",
     "models.label": "모델",
     "models.lede":
       "라우터가 지금 닿을 수 있는 모든 무료 모델. 공개 벤치마크 점수로 정렬했습니다.",
