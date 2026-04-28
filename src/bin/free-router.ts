@@ -346,6 +346,17 @@ function fullWidthLine(content: string, lastLine = false) {
   return `${truncated}${" ".repeat(Math.max(0, maxW - visLen(truncated)))}${R}${CLEAR_TO_EOL}`;
 }
 
+function centeredWidthLine(content: string, lastLine = false) {
+  const c = cols();
+  const guard = lastLine ? Math.max(1, WRAP_GUARD_COLS) : WRAP_GUARD_COLS;
+  const maxW = Math.max(0, c - guard);
+  const truncated = truncAnsi(content, maxW);
+  const padWidth = Math.max(0, maxW - visLen(truncated));
+  const leftPad = Math.floor(padWidth / 2);
+  const rightPad = padWidth - leftPad;
+  return `${" ".repeat(leftPad)}${truncated}${" ".repeat(rightPad)}${R}${CLEAR_TO_EOL}`;
+}
+
 function rightWidthLine(content: string, lastLine = false) {
   const c = cols();
   const guard = lastLine ? Math.max(1, WRAP_GUARD_COLS) : WRAP_GUARD_COLS;
@@ -558,7 +569,7 @@ function renderSelectedModelLine(): string {
   const fullId = `${sel.providerKey}/${sel.id}`;
   const sweStr = sel.sweScore != null ? `  SWE:${sel.sweScore}%` : "";
   const ctxStr = sel.context ? `  ctx:${fmtCtx(sel.context).trim()}` : "";
-  return fullWidthLine(`${D} Selected: ${fullId}${sweStr}${ctxStr}${R}`);
+  return centeredWidthLine(`${D}Selected model: ${fullId}${sweStr}${ctxStr}${R}`);
 }
 
 function footerKey(key: string, label: string): string {
