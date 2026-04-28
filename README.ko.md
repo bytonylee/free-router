@@ -1,12 +1,3 @@
-```
- ███████╗ ██████╗  ███████╗ ███████╗          ██████╗   ██████╗  ██╗   ██╗ ████████╗ ███████╗ ██████╗
- ██╔════╝ ██╔══██╗ ██╔════╝ ██╔════╝          ██╔══██╗ ██╔═══██╗ ██║   ██║ ╚══██╔══╝ ██╔════╝ ██╔══██╗
- █████╗   ██████╔╝ █████╗   █████╗   ██████╗  ██████╔╝ ██║   ██║ ██║   ██║    ██║    █████╗   ██████╔╝
- ██╔══╝   ██╔══██╗ ██╔══╝   ██╔══╝   ╚═════╝  ██╔══██╗ ██║   ██║ ██║   ██║    ██║    ██╔══╝   ██╔══██╗
- ██║      ██║  ██║ ███████╗ ███████╗          ██║  ██║ ╚██████╔╝ ╚██████╔╝    ██║    ███████╗ ██║  ██║
- ╚═╝      ╚═╝  ╚═╝ ╚══════╝ ╚══════╝          ╚═╝  ╚═╝  ╚═════╝   ╚═════╝     ╚═╝    ╚══════╝ ╚═╝  ╚═╝
-```
-
 [English](./README.md) | [한국어](./README.ko.md)
 
 ![Version](https://img.shields.io/badge/version-1.2.0-333333?style=flat-square)
@@ -14,7 +5,7 @@
 [![npm downloads](https://img.shields.io/npm/dm/%40bytonylee%2Ffree-router)](https://www.npmjs.com/package/@bytonylee/free-router)
 [![CI](https://github.com/bytonylee/free-router/actions/workflows/ci.yml/badge.svg)](https://github.com/bytonylee/free-router/actions/workflows/ci.yml)
 
-무료 AI 모델 라우터 CLI — OpenCode / OpenClaw용 무료 모델을 탐색, 핑 테스트, 설정합니다.
+무료 AI 모델 라우터 CLI - OpenCode / OpenClaw용 무료 모델을 탐색, 핑 테스트, 설정합니다.
 
 ![free-router-gif](./public/example.gif)
 
@@ -69,8 +60,8 @@ HOME="$TMP_HOME" NVIDIA_API_KEY= OPENROUTER_API_KEY= free-router
 
 | 프로바이더     | 무료 키 발급                                                                         |
 | -------------- | ------------------------------------------------------------------------------------ |
-| **NVIDIA NIM** | [build.nvidia.com](https://build.nvidia.com/settings/api-keys) — 접두사 `nvapi-`     |
-| **OpenRouter** | [openrouter.ai/settings/keys](https://openrouter.ai/settings/keys) — 접두사 `sk-or-` |
+| **NVIDIA NIM** | [build.nvidia.com](https://build.nvidia.com/settings/api-keys) - 접두사 `nvapi-`     |
+| **OpenRouter** | [openrouter.ai/settings/keys](https://openrouter.ai/settings/keys) - 접두사 `sk-or-` |
 
 API 키 우선순위: 환경 변수 → `~/.free-router.json` → 키 없이 핑 (응답 속도는 그래도 표시됩니다).
 
@@ -160,6 +151,10 @@ FREE_ROUTER_METRICS_CACHE=0 free-router
 OpenCode fallback로 프로바이더가 바뀌는 경우(예: NIM Stepfun → OpenRouter),
 실제 프로바이더 API 키가 없으면 다음 확인 프롬프트가 표시됩니다:
 `Add API key now? (Y/n, default: Y)`.
+
+모델 메타데이터상 선택한 모델이 알려진 타깃 지원 목록에서 지원되지 않는 경우,
+free-router는 기본 고성능 모델인 NVIDIA NIM `deepseek-ai/deepseek-v4-pro`로
+fallback합니다.
 
 설정 파일 경로:
 
