@@ -1652,7 +1652,7 @@ function restartAfterUpdate(extraEnv: NodeJS.ProcessEnv = {}): boolean {
 async function runUpdateApp(
   latest: string,
 ): Promise<"skipped" | "updated" | "failed"> {
-  const [{ render }, React, { UpdateApp }] = await Promise.all([
+  const [{ render }, { createElement }, { UpdateApp }] = await Promise.all([
     import("ink"),
     import("react"),
     import("../tui/update-app.js"),
@@ -1660,7 +1660,7 @@ async function runUpdateApp(
 
   return new Promise((resolve) => {
     let resolved = false;
-    const element = React.createElement(UpdateApp, {
+    const element = createElement(UpdateApp, {
       currentVersion: PKG_VERSION,
       latestVersion: latest,
       detectInstallCommand: detectUpdateInstallCommand,
