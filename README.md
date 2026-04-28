@@ -1,12 +1,3 @@
-```
- ███████╗ ██████╗  ███████╗ ███████╗          ██████╗   ██████╗  ██╗   ██╗ ████████╗ ███████╗ ██████╗
- ██╔════╝ ██╔══██╗ ██╔════╝ ██╔════╝          ██╔══██╗ ██╔═══██╗ ██║   ██║ ╚══██╔══╝ ██╔════╝ ██╔══██╗
- █████╗   ██████╔╝ █████╗   █████╗   ██████╗  ██████╔╝ ██║   ██║ ██║   ██║    ██║    █████╗   ██████╔╝
- ██╔══╝   ██╔══██╗ ██╔══╝   ██╔══╝   ╚═════╝  ██╔══██╗ ██║   ██║ ██║   ██║    ██║    ██╔══╝   ██╔══██╗
- ██║      ██║  ██║ ███████╗ ███████╗          ██║  ██║ ╚██████╔╝ ╚██████╔╝    ██║    ███████╗ ██║  ██║
- ╚═╝      ╚═╝  ╚═╝ ╚══════╝ ╚══════╝          ╚═╝  ╚═╝  ╚═════╝   ╚═════╝     ╚═╝    ╚══════╝ ╚═╝  ╚═╝
-```
-
 [English](./README.md) | [한국어](./README.ko.md)
 
 ![Version](https://img.shields.io/badge/version-1.2.0-333333?style=flat-square)
@@ -14,7 +5,7 @@
 [![npm downloads](https://img.shields.io/npm/dm/%40bytonylee%2Ffree-router)](https://www.npmjs.com/package/@bytonylee/free-router)
 [![CI](https://github.com/bytonylee/free-router/actions/workflows/ci.yml/badge.svg)](https://github.com/bytonylee/free-router/actions/workflows/ci.yml)
 
-Free model router CLI — discover, ping, and configure free AI models for OpenCode / OpenClaw.
+Free model router CLI - discover, ping, and configure free AI models for OpenCode / OpenClaw.
 
 ![free-router-gif](./public/example.gif)
 
@@ -69,8 +60,8 @@ This starts with no `~/.free-router.json` in the temp home and leaves your real 
 
 | Provider       | Free key                                                                             |
 | -------------- | ------------------------------------------------------------------------------------ |
-| **NVIDIA NIM** | [build.nvidia.com](https://build.nvidia.com/settings/api-keys) — prefix `nvapi-`     |
-| **OpenRouter** | [openrouter.ai/settings/keys](https://openrouter.ai/settings/keys) — prefix `sk-or-` |
+| **NVIDIA NIM** | [build.nvidia.com](https://build.nvidia.com/settings/api-keys) - prefix `nvapi-`     |
+| **OpenRouter** | [openrouter.ai/settings/keys](https://openrouter.ai/settings/keys) - prefix `sk-or-` |
 
 API key priority: environment variable → `~/.free-router.json` → keyless ping (latency still shown).
 
@@ -160,6 +151,10 @@ Pressing `Enter` on a model writes the OpenCode config and immediately opens `op
 If OpenCode fallback remaps the provider (for example NIM Stepfun → OpenRouter)
 and the effective provider key is missing, free-router asks:
 `Add API key now? (Y/n, default: Y)`.
+
+If model metadata says the selected model is unsupported by the known target
+support list, free-router falls back to NVIDIA NIM `deepseek-ai/deepseek-v4-pro`
+as the default high-performance model.
 
 Configs written:
 
