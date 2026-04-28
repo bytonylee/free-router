@@ -5,8 +5,8 @@ This repository uses **independent SemVer** for each deliverable:
 - CLI package: `package.json` (`@bytonylee/free-router`)
 - Site package: `site/package.json` (`free-router-site`)
 - Compatibility shims:
-  - `legacy-scope-shim/` (`@jyoung105/free-router`)
-  - `frouter-cli-shim/` (`frouter-cli`)
+  - `publish/legacy-scope-shim/` (`@jyoung105/free-router`)
+  - `publish/frouter-cli-shim/` (`frouter-cli`)
 
 ## 1) SemVer policy (major/minor/patch)
 
@@ -153,8 +153,8 @@ Publish compatibility packages only after `@bytonylee/free-router` is already on
 ```bash
 npm publish --access public
 
-cd legacy-scope-shim && npm publish --access public && cd ..
-cd frouter-cli-shim && npm publish --access public && cd ..
+cd publish/legacy-scope-shim && npm publish --access public && cd ../..
+cd publish/frouter-cli-shim && npm publish --access public && cd ../..
 
 npm deprecate "@jyoung105/free-router@*" "Moved to @bytonylee/free-router. Install: npm i -g @bytonylee/free-router"
 npm deprecate "frouter-cli@*" "Moved to @bytonylee/free-router. Install: npm i -g @bytonylee/free-router"
