@@ -24,6 +24,7 @@ import {
 } from "../lib/ping.js";
 import {
   writeOpenCode,
+  writeOpenClaw,
   resolveOpenCodeSelection,
   isOpenCodeInstalled,
   detectAvailableInstallers,
@@ -759,7 +760,7 @@ async function launchOpenCodeDirect() {
     return;
   }
 
-  const { openCodeModel, openCodePk, openCodeApiKey } =
+  const { openCodeModel, openCodePk, openCodeApiKey, notice } =
     resolveOpenCodeApplySelection(selModel);
 
   let launch = true;
@@ -768,14 +769,18 @@ async function launchOpenCodeDirect() {
     writeOpenCode(openCodeModel, openCodePk, openCodeApiKey, {
       persistApiKey: ALLOW_PLAINTEXT_KEY_EXPORT,
     });
+    writeOpenClaw(openCodeModel, openCodePk, openCodeApiKey, {
+      persistApiKey: ALLOW_PLAINTEXT_KEY_EXPORT,
+    });
   } catch (err: any) {
-    w(`${RED} \u2717 OpenCode write failed: ${err.message}${R}\n`);
+    w(`${RED} \u2717 Target config write failed: ${err.message}${R}\n`);
     setTimeout(() => {
       restoreAfterInkSubApp("main");
       restartLoop();
     }, 1400);
     return;
   }
+  if (notice) w(`\n${notice}\n`);
 
   // Guard: missing API key → offer to add it
   if (launch && !openCodeApiKey) {
