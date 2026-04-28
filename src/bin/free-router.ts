@@ -82,10 +82,6 @@ const SHOWC = "\x1b[?25h";
 const INVERT = "\x1b[7m";
 const BG_HDR = "\x1b[48;5;17m";
 const BG_SEARCH = "\x1b[48;5;235m";
-const BG_OK = "\x1b[48;5;22m";
-const BG_WARN = "\x1b[48;5;58m";
-const BG_BAD = "\x1b[48;5;52m";
-const BG_OFF = "\x1b[48;5;238m";
 const ALT_ON = "\x1b[?1049h";
 const ALT_OFF = "\x1b[?1049l";
 const ALLOW_PLAINTEXT_KEY_EXPORT =
@@ -187,7 +183,7 @@ const DEFAULT_COLS = 80;
 const DEFAULT_ROWS = 12;
 const MIN_COLS = 40;
 const MIN_ROWS = 8;
-const BASE_CHROME_ROWS = 9;
+const BASE_CHROME_ROWS = 6;
 
 function envSize(name: string): number | null {
   const raw = process.env[name];
@@ -240,7 +236,7 @@ function viewport() {
 const cols = () => viewport().c;
 const rows = () => viewport().r;
 // All lines are truncated to terminal width so nothing wraps.
-// Chrome: header block(3) + search block(3) + colhdr/detail/footer = 9 lines
+// Chrome: search block(3) + colhdr/detail/footer = 6 lines
 const mainChromeRows = () => BASE_CHROME_ROWS + (topAlertLine() ? 1 : 0);
 const tRows = () => Math.max(0, rows() - mainChromeRows());
 const WRAP_GUARD_COLS = 1;
@@ -415,26 +411,6 @@ function topAlertLine(): string | null {
   return null;
 }
 
-function providerStatusBlock(providerKey: string, label: string): string {
-  const on = config.providers?.[providerKey]?.enabled !== false;
-  if (!on) return `${BG_OFF}${WHITE} ${label} OFF ${R}`;
-
-  const key = getApiKey(config, providerKey);
-  if (!key) return `${BG_WARN}${WHITE}${B} ${label} NO KEY ${R}`;
-  if (isProviderKeyRejected(providerKey)) {
-    return `${BG_BAD}${WHITE}${B} ${label} WRONG KEY ${R}`;
-  }
-  return `${BG_OK}${WHITE}${B} ${label} READY ${R}`;
-}
-
-function renderHeaderLines(): string[] {
-  const providerBlocks = Object.entries(PROVIDERS_META)
-    .map(([pk, meta]) => providerStatusBlock(pk, meta.name))
-    .join(" ");
-  const title = `${BG_HDR}${WHITE}${B} free-router ${R} ${WHITE}Free Model Router${R}`;
-  return blockWidthLines(title, providerBlocks, `${CYAN}${B}`);
-}
-
 function renderSearchLines(stats: string, tierBar: string): string[] {
   const input = searchMode ? `/${searchQuery}_` : "Press / to search models";
   const hint = searchMode ? "ESC clear  Enter apply" : "/ start";
@@ -473,8 +449,6 @@ function renderMain() {
 
   let out = (FORCE_FRAME_CLEAR ? CLEAR : CURSOR_HOME) + HIDEC;
 
-  // Header
-  for (const line of renderHeaderLines()) out += line + "\n";
   if (topAlert) out += fullWidthLine(topAlert) + "\n";
 
   // Search + stats bar
