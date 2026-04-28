@@ -487,7 +487,8 @@ function renderMain() {
 
       const idx = scrollOff + i;
       const isSel = idx === cursor;
-      const rank = String(idx + 1).padStart(3);
+      const rankText = String(idx + 1).padStart(3);
+      const rank = isSel ? `${YELLOW}${B}${rankText}${R}${BG_SEL}${B}` : rankText;
       const tier = pad(tierColor(m.tier) + (m.tier || "?") + R, 4);
       const prov = pad(m.providerKey === "nvidia" ? "NIM" : "OpenRouter", 11);
       const name = pad(m.displayName || m.id, 32);
