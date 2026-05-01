@@ -17,9 +17,13 @@ type RankingEntry = {
   aa_slug?: string;
   swe_bench?: string;
   tier?: string;
+  aa_benchmark_score?: number;
+  aa_benchmark_name?: string;
+  aa_coding_index?: number;
   aa_intelligence?: number;
   aa_speed_tps?: number;
   opencode_supported?: boolean;
+  opencode_compatibility_reason?: string;
 };
 
 let _byId: Map<string, RankingEntry> | null = null;
@@ -136,6 +140,18 @@ function makeModel(
   const ranking = lookupRankings(id);
   const sweScore = ranking?.swe_bench ? parseFloat(ranking.swe_bench) : null;
   const tier = ranking?.tier || scoreTier(sweScore);
+  const aaBenchmarkScore =
+    ranking?.aa_benchmark_score ??
+    ranking?.aa_coding_index ??
+    ranking?.aa_intelligence ??
+    null;
+  const aaBenchmarkName =
+    ranking?.aa_benchmark_name ??
+    (ranking?.aa_coding_index != null
+      ? "coding_index"
+      : ranking?.aa_intelligence != null
+        ? "intelligence_index"
+        : null);
   return {
     id,
     displayName,
@@ -143,12 +159,16 @@ function makeModel(
     providerKey,
     sweScore,
     tier,
+    aaBenchmarkScore,
+    aaBenchmarkName,
+    aaCodingIndex: ranking?.aa_coding_index ?? null,
     aaIntelligence: ranking?.aa_intelligence ?? null,
     aaSpeedTps: ranking?.aa_speed_tps ?? null,
     opencodeSupported:
       typeof ranking?.opencode_supported === "boolean"
         ? ranking.opencode_supported
         : null,
+    opencodeCompatibilityReason: ranking?.opencode_compatibility_reason ?? null,
     pings: [],
     status: "pending",
     httpCode: null,

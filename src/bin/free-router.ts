@@ -262,7 +262,7 @@ const SORT_COLS = [
   { key: "6", col: "uptime", label: "Up%" },
   { key: "7", col: "context", label: "Ctx" },
   { key: "8", col: "verdict", label: "Verdict" },
-  { key: "9", col: "intel", label: "AA" },
+  { key: "9", col: "bench", label: "Bench" },
 ];
 
 function sortArrow(colName: string) {
@@ -288,7 +288,7 @@ type TableColumn = {
     | "provider"
     | "model"
     | "context"
-    | "intel"
+    | "bench"
     | "avg"
     | "latest"
     | "uptime"
@@ -305,7 +305,7 @@ const TABLE_COLUMNS: TableColumn[] = [
   { key: "provider", label: "Provider", sortCol: "provider", width: 13 },
   { key: "model", label: "Model", sortCol: "model", width: 34 },
   { key: "context", label: "Ctx", sortCol: "context", width: 7, right: true },
-  { key: "intel", label: "AA", sortCol: "intel", width: 5, right: true },
+  { key: "bench", label: "Bench", sortCol: "bench", width: 6, right: true },
   { key: "avg", label: "Avg", sortCol: "avg", width: 8, right: true },
   { key: "latest", label: "Lat", sortCol: "latest", width: 8, right: true },
   { key: "uptime", label: "Up%", sortCol: "uptime", width: 6, right: true },
@@ -332,6 +332,21 @@ function fmtUp(pct: number, hasPings: boolean) {
 function fmtLatency(ms: number | null) {
   if (ms != null) return latColor(ms) + fmtMs(ms) + R;
   return `${D}${fmtMs(null)}${R}`;
+}
+
+function fmtBenchScore(score: number | null) {
+  if (score == null) return `${GRAY}   -${R}`;
+  return String(Math.round(score)).padStart(4);
+}
+
+function benchLabel(name: string | null) {
+  return name === "coding_index" ? "Code" : "IQ";
+}
+
+function openCodeSupportLabel(model: Model) {
+  if (model.opencodeSupported === true) return "OC:yes";
+  if (model.opencodeSupported === false) return "OC:no";
+  return "OC:?";
 }
 
 function fullWidthBar(content: string, style = INVERT, lastLine = false) {
@@ -568,8 +583,15 @@ function renderSelectedModelLine(): string {
 
   const fullId = `${sel.providerKey}/${sel.id}`;
   const sweStr = sel.sweScore != null ? `  SWE:${sel.sweScore}%` : "";
+  const benchStr =
+    sel.aaBenchmarkScore != null
+      ? `  ${benchLabel(sel.aaBenchmarkName)}:${sel.aaBenchmarkScore}`
+      : "";
   const ctxStr = sel.context ? `  ctx:${fmtCtx(sel.context).trim()}` : "";
-  return fullWidthLine(`${D} Selected model: ${fullId}${sweStr}${ctxStr}${R}`);
+  const ocStr = `  ${openCodeSupportLabel(sel)}`;
+  return fullWidthLine(
+    `${D} Selected model: ${fullId}${sweStr}${benchStr}${ctxStr}${ocStr}${R}`,
+  );
 }
 
 function footerKey(key: string, label: string): string {
@@ -708,10 +730,7 @@ function renderMain() {
       const upStr = uptimeColor(up) + fmtUp(up, m.pings.length > 0) + R;
       const dot = statusDot(m);
       const verdict = `${dot} ${formatVerdict(getVerdict(m), isSel)}`;
-      const aaStr =
-        m.aaIntelligence != null
-          ? String(Math.round(m.aaIntelligence)).padStart(3)
-          : `${GRAY}  —${R}`;
+      const benchStr = fmtBenchScore(m.aaBenchmarkScore);
 
       out +=
         tableRowLine(
@@ -721,7 +740,7 @@ function renderMain() {
             provider: prov,
             model: name,
             context: ctx,
-            intel: aaStr,
+            bench: benchStr,
             avg: avgStr,
             latest: latStr,
             uptime: upStr,

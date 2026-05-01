@@ -34,9 +34,13 @@ export type Model = {
   providerKey: string;
   sweScore: number | null;
   tier: string;
+  aaBenchmarkScore: number | null;
+  aaBenchmarkName: string | null;
+  aaCodingIndex: number | null;
   aaIntelligence: number | null;
   aaSpeedTps: number | null;
   opencodeSupported: boolean | null;
+  opencodeCompatibilityReason: string | null;
   pings: PingEntry[];
   status: string;
   httpCode: string | null;
@@ -335,6 +339,9 @@ export function sortModels(models: Model[], col: string, asc = true): Model[] {
         break;
       case "context":
         cmp = (a.context || 0) - (b.context || 0);
+        break;
+      case "bench":
+        cmp = (a.aaBenchmarkScore ?? -1) - (b.aaBenchmarkScore ?? -1);
         break;
       case "intel":
         cmp = (a.aaIntelligence ?? -1) - (b.aaIntelligence ?? -1);
