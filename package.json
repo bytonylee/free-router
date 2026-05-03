@@ -45,7 +45,7 @@
     "llm",
     "free-api"
   ],
-  "license": "MIT",
+  "license": "Apache-2.0",
   "dependencies": {
     "ink": "^7.0.1",
     "react": "^19.2.5"
