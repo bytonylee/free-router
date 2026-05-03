@@ -1,7 +1,7 @@
 [English](./README.md) | [한국어](./README.ko.md)
 
 ![Version](https://img.shields.io/badge/version-1.2.1-333333?style=flat-square)
-[![License: MIT License](https://img.shields.io/badge/License-MIT%20License-yellow.svg)](./LICENSE)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](./LICENSE)
 [![npm downloads](https://img.shields.io/npm/dm/%40bytonylee%2Ffree-router)](https://www.npmjs.com/package/@bytonylee/free-router)
 [![CI](https://github.com/bytonylee/free-router/actions/workflows/ci.yml/badge.svg)](https://github.com/bytonylee/free-router/actions/workflows/ci.yml)
 
@@ -261,4 +261,4 @@ API 키가 최소 하나 이상 설정되어 있어야 합니다. 선택 기준:
 
 ## 라이선스
 
-MIT License입니다. 자세한 내용은 [LICENSE](./LICENSE)를 참고하세요.
+Apache License 2.0입니다. 자세한 내용은 [LICENSE](./LICENSE)를 참고하세요.
