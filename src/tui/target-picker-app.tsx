@@ -6,7 +6,13 @@ import { useState } from "react";
 import { Text, Box, useInput } from "ink";
 import { Select, StatusMessage } from "./primitives.js";
 
-type Target = { id: string; label: string; path: string; enabled: boolean };
+type Target = {
+  id: string;
+  label: string;
+  path: string;
+  enabled: boolean;
+  launchable?: boolean;
+};
 
 export type TargetPickerResult =
   | { action: "cancelled" }
@@ -47,9 +53,12 @@ export function TargetPickerApp({
     value: t.id,
   }));
 
+  const selectedTargetDef = targets.find((t) => t.id === selectedTarget);
   const actionOptions = [
-    { label: "Save + Launch opencode", value: "launch" },
-    { label: "Save only", value: "save" },
+    ...(selectedTargetDef?.launchable
+      ? [{ label: `Save + Launch ${selectedTargetDef.label}`, value: "launch" }]
+      : []),
+    { label: `Save ${selectedTargetDef?.label ?? "target"} config`, value: "save" },
     { label: "Cancel", value: "cancel" },
   ];
 
