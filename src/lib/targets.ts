@@ -1,4 +1,4 @@
-// src/lib/targets.ts — write config to OpenCode and OpenClaw
+// src/lib/targets.ts — write config to OpenCode, OpenClaw, and Hermes Agent
 import { execSync, spawnSync } from "node:child_process";
 import {
   readFileSync,
@@ -16,6 +16,8 @@ import { type Model } from "./utils.js";
 
 const OPENCODE_PATH = join(homedir(), ".config", "opencode", "opencode.json");
 const OPENCLAW_PATH = join(homedir(), ".openclaw", "openclaw.json");
+const HERMES_CONFIG_PATH = join(homedir(), ".hermes", "config.yaml");
+const HERMES_ENV_PATH = join(homedir(), ".hermes", ".env");
 const IS_WIN = platform() === "win32";
 let cachedOpenCodeConfig: Record<string, any> | null = null;
 let cachedOpenCodeConfigFingerprint: string | null = null;
@@ -54,6 +56,10 @@ function readOpenCodeConfig(force = false) {
 }
 
 function backupAndWriteJson(path: string, data: Record<string, any>) {
+  backupAndWriteText(path, JSON.stringify(data, null, 2) + "\n");
+}
+
+function backupAndWriteText(path: string, data: string) {
   const dir = dirname(path);
   if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
   if (existsSync(path)) {
@@ -66,7 +72,7 @@ function backupAndWriteJson(path: string, data: Record<string, any>) {
       /* best-effort */
     }
   }
-  writeFileSync(path, JSON.stringify(data, null, 2) + "\n", { mode: 0o600 });
+  writeFileSync(path, data, { mode: 0o600 });
   try {
     chmodSync(path, 0o600);
   } catch {
@@ -158,6 +164,39 @@ export function installOpenCode(installer: { command: string }) {
 
 function getBaseUrl(meta: { chatUrl: string }) {
   return meta.chatUrl.replace("/chat/completions", "");
+}
+
+function envLineValue(value: string) {
+  if (/^[^\s"'\\#=]+$/.test(value)) return value;
+  return JSON.stringify(value);
+}
+
+function setEnvFileValue(path: string, key: string, value: string) {
+  const dir = dirname(path);
+  if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+  const lines = existsSync(path) ? readFileSync(path, "utf8").split(/\r?\n/) : [];
+  const nextLine = `${key}=${envLineValue(value)}`;
+  let replaced = false;
+  const nextLines = lines.map((line) => {
+    if (line.trimStart().startsWith("#")) return line;
+    if (!line.match(new RegExp(`^\\s*${key}\\s*=`))) return line;
+    replaced = true;
+    return nextLine;
+  });
+  if (!replaced) {
+    if (nextLines.length && nextLines[nextLines.length - 1] !== "") {
+      nextLines.push("");
+    }
+    nextLines.push(nextLine);
+  }
+  writeFileSync(path, nextLines.join("\n").replace(/\n*$/, "\n"), {
+    mode: 0o600,
+  });
+  try {
+    chmodSync(path, 0o600);
+  } catch {
+    /* best-effort */
+  }
 }
 
 function readStringArray(value: unknown): string[] {
@@ -357,10 +396,12 @@ export function resolveOpenCodeSelection(
 
 /**
  * Merge free-router config into OpenClaw JSON:
- *   - models.providers.<providerKey>
- *   - env.<PROVIDER>_API_KEY  (actual key value — OpenClaw's own design)
+ *   - env.<PROVIDER>_API_KEY  (when plaintext export is explicitly enabled)
  *   - agents.defaults.model.primary
  *   - agents.defaults.models allowlist entry (required or OpenClaw rejects it)
+ *
+ * OpenClaw ships built-in openrouter/nvidia providers, so do not shadow them
+ * with models.providers unless custom provider override support is added.
  */
 export function writeOpenClaw(
   model: Model,
@@ -372,13 +413,6 @@ export function writeOpenClaw(
   const meta = getProviderMeta(providerKey);
   const cfg = readJson(OPENCLAW_PATH);
   const qid = `${providerKey}/${model.id}`;
-
-  cfg.models ??= {};
-  cfg.models.providers ??= {};
-  cfg.models.providers[providerKey] = {
-    baseUrl: getBaseUrl(meta),
-    api: "openai-completions",
-  };
 
   if (persistedApiKey) {
     cfg.env ??= {};
@@ -397,4 +431,63 @@ export function writeOpenClaw(
 
   backupAndWriteJson(OPENCLAW_PATH, cfg);
   return OPENCLAW_PATH;
+}
+
+function yamlString(value: string) {
+  return JSON.stringify(value);
+}
+
+function replaceTopLevelYamlBlock(source: string, key: string, block: string) {
+  const lines = source.replace(/\r\n/g, "\n").split("\n");
+  let start = -1;
+  for (let i = 0; i < lines.length; i++) {
+    if (new RegExp(`^${key}:\\s*(?:#.*)?$`).test(lines[i])) {
+      start = i;
+      break;
+    }
+  }
+  if (start === -1) {
+    const trimmed = source.replace(/\s*$/, "");
+    return `${trimmed}${trimmed ? "\n\n" : ""}${block}\n`;
+  }
+
+  let end = lines.length;
+  for (let i = start + 1; i < lines.length; i++) {
+    if (/^[A-Za-z0-9_-]+:\s*/.test(lines[i])) {
+      end = i;
+      break;
+    }
+  }
+  return [...lines.slice(0, start), ...block.split("\n"), ...lines.slice(end)]
+    .join("\n")
+    .replace(/\n*$/, "\n");
+}
+
+export function writeHermesAgent(
+  model: Model,
+  providerKey: string,
+  apiKey: string | null = null,
+  options: { persistApiKey?: boolean } = {},
+) {
+  const persistedApiKey = resolvePersistedApiKey(providerKey, apiKey, options);
+  const meta = getProviderMeta(providerKey);
+  const current = existsSync(HERMES_CONFIG_PATH)
+    ? readFileSync(HERMES_CONFIG_PATH, "utf8")
+    : "";
+  const modelBlock = [
+    "model:",
+    `  provider: ${yamlString(providerKey)}`,
+    `  default: ${yamlString(model.id)}`,
+  ].join("\n");
+
+  backupAndWriteText(
+    HERMES_CONFIG_PATH,
+    replaceTopLevelYamlBlock(current, "model", modelBlock),
+  );
+
+  if (persistedApiKey) {
+    setEnvFileValue(HERMES_ENV_PATH, meta.envVar, persistedApiKey);
+  }
+
+  return HERMES_CONFIG_PATH;
 }
