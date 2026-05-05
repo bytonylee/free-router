@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "node scripts/generate-site.mjs && vite",
     "generate": "node scripts/generate-site.mjs",
+    "check": "tsc --noEmit",
     "build": "node scripts/build-site.mjs",
     "preview": "vite preview",
     "sync:manifest": "node scripts/generate-site.mjs --write-manifest"
