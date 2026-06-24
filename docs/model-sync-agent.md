@@ -27,7 +27,6 @@ OpenCode support, and generated site output.
    ```
 
 2. Inspect the report for:
-
    - added provider models
    - removed provider models
    - benchmark changes
@@ -57,7 +56,6 @@ OpenCode support, and generated site output.
    ```
 
 6. Summarize:
-
    - model additions/removals
    - benchmark updates
    - OpenCode support changes
