@@ -174,7 +174,9 @@ function envLineValue(value: string) {
 function setEnvFileValue(path: string, key: string, value: string) {
   const dir = dirname(path);
   if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
-  const lines = existsSync(path) ? readFileSync(path, "utf8").split(/\r?\n/) : [];
+  const lines = existsSync(path)
+    ? readFileSync(path, "utf8").split(/\r?\n/)
+    : [];
   const nextLine = `${key}=${envLineValue(value)}`;
   let replaced = false;
   const nextLines = lines.map((line) => {

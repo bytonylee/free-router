@@ -111,7 +111,8 @@ export function loadConfig(): FrouterConfig {
     },
   };
   if (existsSync(CONFIG_PATH)) return readConfigFile(CONFIG_PATH, defaults);
-  if (existsSync(LEGACY_CONFIG_PATH)) return migrateLegacyConfigIfNeeded(defaults);
+  if (existsSync(LEGACY_CONFIG_PATH))
+    return migrateLegacyConfigIfNeeded(defaults);
   return defaults;
 }
 
