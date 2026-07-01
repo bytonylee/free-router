@@ -72,18 +72,18 @@ FREE_ROUTER_METRICS_CACHE=0 free-router
 
 ### 컬럼 설명
 
-| 컬럼       | 설명                                                   |
-| ---------- | ------------------------------------------------------ |
-| `#`        | 순위                                                   |
-| `Tier`     | SWE-bench 점수 기반 성능 등급 (S+ → C)                 |
-| `Provider` | NIM 또는 OpenRouter                                    |
-| `Model`    | 모델 이름                                              |
-| `Ctx`      | 컨텍스트 윈도우 크기                                   |
-| `AA`       | Arena Elo / 지능 점수                                  |
-| `Avg`      | HTTP 200 응답만을 기준으로 한 평균 응답 속도           |
-| `Lat`      | 마지막으로 측정된 핑 응답 속도                         |
-| `Up%`      | 현재 세션 가동률                                       |
-| `Verdict`  | 상태 요약 (✓ Perfect / ✓ Normal / x Overloaded / …)    |
+| 컬럼       | 설명                                                |
+| ---------- | --------------------------------------------------- |
+| `#`        | 순위                                                |
+| `Tier`     | SWE-bench 점수 기반 성능 등급 (S+ → C)              |
+| `Provider` | NIM 또는 OpenRouter                                 |
+| `Model`    | 모델 이름                                           |
+| `Ctx`      | 컨텍스트 윈도우 크기                                |
+| `AA`       | Arena Elo / 지능 점수                               |
+| `Avg`      | HTTP 200 응답만을 기준으로 한 평균 응답 속도        |
+| `Lat`      | 마지막으로 측정된 핑 응답 속도                      |
+| `Up%`      | 현재 세션 가동률                                    |
+| `Verdict`  | 상태 요약 (✓ Perfect / ✓ Normal / x Overloaded / …) |
 
 기본 정렬 기준: **응답 가능 모델 우선**, 그 다음 **높은 등급 우선** (S+ → S → A+ …), 그 다음 낮은 응답 속도.
 
