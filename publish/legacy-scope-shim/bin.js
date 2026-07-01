@@ -27,13 +27,19 @@ try {
   process.stderr.write(
     `\x1b[31m  Failed to locate ${NEW_PACKAGE}. Reinstall manually: npm install -g ${NEW_PACKAGE}${RESET}\n`,
   );
-  process.stderr.write(`${DIM}  ${err && err.message ? err.message : String(err)}${RESET}\n`);
+  process.stderr.write(
+    `${DIM}  ${err && err.message ? err.message : String(err)}${RESET}\n`,
+  );
   process.exit(1);
 }
 
-const child = spawn(process.execPath, [freeRouterBin, ...process.argv.slice(2)], {
-  stdio: "inherit",
-});
+const child = spawn(
+  process.execPath,
+  [freeRouterBin, ...process.argv.slice(2)],
+  {
+    stdio: "inherit",
+  },
+);
 
 child.on("exit", (code, signal) => {
   if (signal) {
@@ -44,6 +50,8 @@ child.on("exit", (code, signal) => {
 });
 
 child.on("error", (err) => {
-  process.stderr.write(`\x1b[31m  free-router failed to start: ${err.message}${RESET}\n`);
+  process.stderr.write(
+    `\x1b[31m  free-router failed to start: ${err.message}${RESET}\n`,
+  );
   process.exit(1);
 });
