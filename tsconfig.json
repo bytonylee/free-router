@@ -9,7 +9,7 @@
     "strict": true,
     "skipLibCheck": true,
     "noEmitOnError": true,
-    "sourceMap": false,
+    "sourceMap": true,
     "jsx": "react-jsx"
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],

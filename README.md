@@ -72,18 +72,18 @@ The selected row uses a stable marker, and redraws are deferred while the termin
 
 ### Columns
 
-| Column     | Description                                                    |
-| ---------- | -------------------------------------------------------------- |
-| `#`        | Rank                                                           |
-| `Tier`     | Capability tier derived from SWE-bench score (S+ → C)          |
-| `Provider` | NIM or OpenRouter                                              |
-| `Model`    | Display name                                                   |
-| `Ctx`      | Context window size                                            |
-| `AA`       | Arena Elo / intelligence score                                 |
-| `Avg`      | Rolling average latency (HTTP 200 only)                        |
-| `Lat`      | Latest measured ping latency                                   |
-| `Up%`      | Uptime percentage this session                                 |
-| `Verdict`  | Condition summary (✓ Perfect / ✓ Normal / x Overloaded / …)    |
+| Column     | Description                                                 |
+| ---------- | ----------------------------------------------------------- |
+| `#`        | Rank                                                        |
+| `Tier`     | Capability tier derived from SWE-bench score (S+ → C)       |
+| `Provider` | NIM or OpenRouter                                           |
+| `Model`    | Display name                                                |
+| `Ctx`      | Context window size                                         |
+| `AA`       | Arena Elo / intelligence score                              |
+| `Avg`      | Rolling average latency (HTTP 200 only)                     |
+| `Lat`      | Latest measured ping latency                                |
+| `Up%`      | Uptime percentage this session                              |
+| `Verdict`  | Condition summary (✓ Perfect / ✓ Normal / x Overloaded / …) |
 
 Default ranking: **availability first**, then **higher tier first** (S+ → S → A+ …), then lower latency.
 
@@ -111,17 +111,17 @@ uses the same foreground color as the table rows.
 
 **Actions**
 
-| Key            | Action                                                     |
-| -------------- | ---------------------------------------------------------- |
-| `Enter`        | Configure current model for OpenCode / OpenClaw / Hermes   |
+| Key            | Action                                                      |
+| -------------- | ----------------------------------------------------------- |
+| `Enter`        | Configure current model for OpenCode / OpenClaw / Hermes    |
 | `/`            | Search / filter models (Enter in search = configure target) |
-| `A`            | Quick API key add/change (opens key editor in Settings)    |
-| `R`            | Edit API key for likely expired/missing provider           |
-| `T`            | Cycle tier filter: All → S+ → S → A+ → …                   |
-| `P`            | Settings screen (edit keys, toggle providers, test)        |
-| `W` / `X`      | Faster / slower ping interval                              |
-| `?`            | Help overlay                                               |
-| `q` / `Ctrl+C` | Quit                                                       |
+| `A`            | Quick API key add/change (opens key editor in Settings)     |
+| `R`            | Edit API key for likely expired/missing provider            |
+| `T`            | Cycle tier filter: All → S+ → S → A+ → …                    |
+| `P`            | Settings screen (edit keys, toggle providers, test)         |
+| `W` / `X`      | Faster / slower ping interval                               |
+| `?`            | Help overlay                                                |
+| `q` / `Ctrl+C` | Quit                                                        |
 
 **Sort** (press to sort, press again to reverse)
 

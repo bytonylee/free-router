@@ -1015,8 +1015,7 @@ async function main() {
   console.log("Fetching OpenCode-supported models (Models.dev)...");
   let support = loadExistingSupportFile();
   let supportFetched = false;
-  let supportSource: "models.dev" | "opencode-github" | "existing" =
-    "existing";
+  let supportSource: "models.dev" | "opencode-github" | "existing" = "existing";
 
   try {
     const modelsDev = await fetchJson("models.dev", "/api.json");
@@ -1072,10 +1071,7 @@ async function main() {
       console.log("\n(dry run — pass --apply to write OpenCode support data)");
     } else {
       console.log("\n═══ APPLYING OPENCODE SUPPORT ONLY ═══");
-      const supportChanged = applyOpenCodeSupportToRankings(
-        rankings,
-        support,
-      );
+      const supportChanged = applyOpenCodeSupportToRankings(rankings, support);
       if (supportChanged) {
         writeFileSync(RANKINGS_PATH, JSON.stringify(rankings, null, 2) + "\n");
         report.rankings.changed = true;
@@ -1157,7 +1153,9 @@ async function main() {
     orFetchOk = true;
     report.providers.openrouter.fetched = true;
     report.providers.openrouter.total = orApiModels.length;
-    console.log(`  Found ${orApiModels.length} OpenRouter free LLM/VLM models\n`);
+    console.log(
+      `  Found ${orApiModels.length} OpenRouter free LLM/VLM models\n`,
+    );
   } catch (err: any) {
     console.error(`  Failed to fetch OpenRouter: ${err.message}\n`);
   }
@@ -1220,9 +1218,7 @@ async function main() {
   report.providers.openrouter.new_rankings = orNew.length;
   report.providers.openrouter.removed_rankings = orRemoved.length;
   report.added_models.push(...orNew.map((m) => `openrouter/${m.id}`));
-  report.removed_models.push(
-    ...orRemoved.map((id) => `openrouter/${id}`),
-  );
+  report.removed_models.push(...orRemoved.map((id) => `openrouter/${id}`));
 
   console.log("\n═══ OPENROUTER DIFF ═══");
   if (!orFetchOk) {
@@ -1462,7 +1458,8 @@ async function main() {
           aaHit?.aa_benchmark_score ?? nimTwin?.aa_benchmark_score ?? null,
         aa_benchmark_name:
           aaHit?.aa_benchmark_name ?? nimTwin?.aa_benchmark_name ?? null,
-        aa_coding_index: aaHit?.aa_coding_index ?? nimTwin?.aa_coding_index ?? null,
+        aa_coding_index:
+          aaHit?.aa_coding_index ?? nimTwin?.aa_coding_index ?? null,
         aa_intelligence:
           aaHit?.aa_intelligence ?? nimTwin?.aa_intelligence ?? null,
         aa_speed_tps: aaHit?.aa_speed_tps ?? nimTwin?.aa_speed_tps ?? null,

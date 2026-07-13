@@ -1,6 +1,7 @@
 # Cache artifacts
 cache/
 .cache/
+.codegraph/
 .astro/
 dist/
 *.tsbuildinfo
@@ -59,8 +60,6 @@ test-results/
 .cursor/
 .roo/
 
-# Test code
-/tests/
 /site/.generated/
 /site/models/
 /site/public/llms.txt

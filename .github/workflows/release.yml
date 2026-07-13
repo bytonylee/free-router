@@ -1,32 +1,84 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - "cli-v*"
-      - "site-v*"
-      - "v*"
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Approved existing release tag: vX.Y.Z, cli-vX.Y.Z, or site-vX.Y.Z"
+        required: true
+        type: string
 
 permissions:
-  contents: write
+  contents: read
+
+env:
+  DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+  RELEASE_TAG: ${{ inputs.release_tag }}
 
 jobs:
-  publish-cli:
-    name: Publish CLI (npm)
-    if: startsWith(github.ref_name, 'cli-v') || (startsWith(github.ref_name, 'v') && !startsWith(github.ref_name, 'site-v'))
+  validate-release:
+    name: Validate trusted release request
     runs-on: ubuntu-latest
+    outputs:
+      release-kind: ${{ steps.validate.outputs.release-kind }}
+    permissions:
+      contents: read
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
+      - name: Checkout default branch for trusted validation
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Validate release tag provenance
+        id: validate
+        run: |
+          if [ "$GITHUB_REF" != "refs/heads/$DEFAULT_BRANCH" ]; then
+            echo "::error::Release workflow must be dispatched from the protected default branch."
+            exit 1
+          fi
+
+          if [[ "$RELEASE_TAG" =~ ^(cli-v|v)[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]; then
+            release_kind="cli"
+          elif [[ "$RELEASE_TAG" =~ ^site-v[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]; then
+            release_kind="site"
+          else
+            echo "::error::release_tag must be vX.Y.Z, cli-vX.Y.Z, or site-vX.Y.Z."
+            exit 1
+          fi
+
+          git fetch --no-tags origin "refs/tags/$RELEASE_TAG:refs/tags/$RELEASE_TAG"
+          tag_commit="$(git rev-list -n 1 "$RELEASE_TAG")"
+          if ! git merge-base --is-ancestor "$tag_commit" "origin/$DEFAULT_BRANCH"; then
+            echo "::error::Release tag must point to a commit reachable from the protected default branch."
+            exit 1
+          fi
+
+          echo "release-kind=$release_kind" >> "$GITHUB_OUTPUT"
+
+  build-cli:
+    name: Build CLI package
+    needs: validate-release
+    if: needs.validate-release.outputs.release-kind == 'cli'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout release tag without credentials
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          ref: ${{ inputs.release_tag }}
+          persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: 22
           registry-url: https://registry.npmjs.org
 
       - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
           bun-version: 1.3.5
 
@@ -34,8 +86,8 @@ jobs:
         run: |
           PKG_VERSION_LEGACY="v$(node -p "require('./package.json').version")"
           PKG_VERSION_TARGETED="cli-v$(node -p "require('./package.json').version")"
-          if [ "${{ github.ref_name }}" != "$PKG_VERSION_LEGACY" ] && [ "${{ github.ref_name }}" != "$PKG_VERSION_TARGETED" ]; then
-            echo "Tag ${{ github.ref_name }} does not match package.json version ($PKG_VERSION_LEGACY or $PKG_VERSION_TARGETED)"
+          if [ "$RELEASE_TAG" != "$PKG_VERSION_LEGACY" ] && [ "$RELEASE_TAG" != "$PKG_VERSION_TARGETED" ]; then
+            echo "::error::Tag $RELEASE_TAG does not match package.json version ($PKG_VERSION_LEGACY or $PKG_VERSION_TARGETED)."
             exit 1
           fi
 
@@ -51,42 +103,85 @@ jobs:
       - name: Build dist artifacts
         run: npm run build
 
+      - name: Pack npm artifact
+        run: |
+          mkdir -p "$RUNNER_TEMP/npm-pack"
+          npm pack --pack-destination "$RUNNER_TEMP/npm-pack"
+
+      - name: Upload npm package artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: cli-package
+          path: ${{ runner.temp }}/npm-pack/*.tgz
+          if-no-files-found: error
+
+  publish-cli:
+    name: Publish CLI package
+    needs:
+      - validate-release
+      - build-cli
+    if: needs.validate-release.outputs.release-kind == 'cli'
+    runs-on: ubuntu-latest
+    environment:
+      name: npm-release
+    permissions:
+      contents: write
+    steps:
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+
+      - name: Download npm package artifact
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: cli-package
+          path: cli-package
+
       - name: Publish to npm
-        run: npm publish
+        run: npm publish cli-package/*.tgz --ignore-scripts
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create GitHub release
         run: |
-          gh release create "${{ github.ref_name }}" \
-            --title "${{ github.ref_name }}" \
-            --generate-notes
+          gh release create "$RELEASE_TAG" \
+            --title "$RELEASE_TAG" \
+            --generate-notes \
+            --verify-tag
         env:
           GH_TOKEN: ${{ github.token }}
 
-  release-site:
-    name: Release site artifact
-    if: startsWith(github.ref_name, 'site-v')
+  build-site:
+    name: Build site artifact
+    needs: validate-release
+    if: needs.validate-release.outputs.release-kind == 'site'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
+      - name: Checkout release tag without credentials
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          ref: ${{ inputs.release_tag }}
+          persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: 22
 
       - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
           bun-version: 1.3.5
 
       - name: Verify tag matches site/package.json version
         run: |
           SITE_VERSION="site-v$(node -p "require('./site/package.json').version")"
-          if [ "$SITE_VERSION" != "${{ github.ref_name }}" ]; then
-            echo "Tag ${{ github.ref_name }} does not match site/package.json version $SITE_VERSION"
+          if [ "$SITE_VERSION" != "$RELEASE_TAG" ]; then
+            echo "::error::Tag $RELEASE_TAG does not match site/package.json version $SITE_VERSION."
             exit 1
           fi
 
@@ -97,12 +192,41 @@ jobs:
         run: bun run --cwd site build
 
       - name: Package site artifact
-        run: tar -C site/dist -czf site-dist.tgz .
+        run: |
+          tar -C site/dist -czf site-dist.tgz .
+          mkdir -p "$RUNNER_TEMP/site-release"
+          mv site-dist.tgz "$RUNNER_TEMP/site-release/site-dist.tgz"
+
+      - name: Upload site artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: site-dist
+          path: ${{ runner.temp }}/site-release/site-dist.tgz
+          if-no-files-found: error
+
+  release-site:
+    name: Release site artifact
+    needs:
+      - validate-release
+      - build-site
+    if: needs.validate-release.outputs.release-kind == 'site'
+    runs-on: ubuntu-latest
+    environment:
+      name: site-release
+    permissions:
+      contents: write
+    steps:
+      - name: Download site artifact
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: site-dist
+          path: site-dist
 
       - name: Create GitHub release
         run: |
-          gh release create "${{ github.ref_name }}" site-dist.tgz \
-            --title "${{ github.ref_name }}" \
-            --generate-notes
+          gh release create "$RELEASE_TAG" site-dist/site-dist.tgz \
+            --title "$RELEASE_TAG" \
+            --generate-notes \
+            --verify-tag
         env:
           GH_TOKEN: ${{ github.token }}
