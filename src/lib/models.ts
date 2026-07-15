@@ -905,7 +905,9 @@ async function fetchNimModels(apiKey: string | null): Promise<Model[] | null> {
   );
   if (!data) return null;
 
-  const allowedIds = new Set(getRankingsBySource("nim").map((entry) => entry.model_id));
+  const allowedIds = new Set(
+    getRankingsBySource("nim").map((entry) => entry.model_id),
+  );
 
   const result = data
     .filter((m) => {
@@ -941,7 +943,8 @@ async function fetchOpenRouterModels(apiKey: string | null): Promise<Model[]> {
   );
   return data
     .filter((m) => {
-      if (m?.pricing?.prompt !== "0" || m?.pricing?.completion !== "0") return false;
+      if (m?.pricing?.prompt !== "0" || m?.pricing?.completion !== "0")
+        return false;
       const output = Array.isArray(m?.architecture?.output_modalities)
         ? m.architecture.output_modalities
         : [];
@@ -950,10 +953,13 @@ async function fetchOpenRouterModels(apiKey: string | null): Promise<Model[]> {
       const input = Array.isArray(m?.architecture?.input_modalities)
         ? m.architecture.input_modalities
         : ["text"];
-      if (input.some((value: string) => value !== "text" && value !== "image")) {
+      if (
+        input.some((value: string) => value !== "text" && value !== "image")
+      ) {
         return false;
       }
-      const haystack = `${m?.id || ""} ${m?.name || ""} ${m?.description || ""}`.toLowerCase();
+      const haystack =
+        `${m?.id || ""} ${m?.name || ""} ${m?.description || ""}`.toLowerCase();
       if (haystack.includes("openrouter/free")) return false;
       return !/ocr|video|audio|speech|voice|speaker|detector|detection|translate|translation|embed|rerank|guard|safety|retriever/i.test(
         haystack,

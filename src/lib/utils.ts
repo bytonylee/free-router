@@ -13,7 +13,9 @@ export const ORANGE = "\x1b[38;5;208m";
 export const BG_SEL = "\x1b[48;5;235m"; // subtle selection highlight
 
 export function readEnv(name: string, legacyName?: string): string | undefined {
-  return process.env[name] ?? (legacyName ? process.env[legacyName] : undefined);
+  return (
+    process.env[name] ?? (legacyName ? process.env[legacyName] : undefined)
+  );
 }
 
 // ─── Shared types ─────────────────────────────────────────────────────────────

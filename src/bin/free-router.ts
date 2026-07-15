@@ -425,18 +425,23 @@ function blockWidthLines(
   const c = cols();
   const guard = WRAP_GUARD_COLS;
   const maxW = Math.max(0, c - guard);
-  if (maxW <= 4) return [fullWidthLine(""), fullWidthLine(""), fullWidthLine("")];
+  if (maxW <= 4)
+    return [fullWidthLine(""), fullWidthLine(""), fullWidthLine("")];
 
   const innerW = maxW - 2;
   const rightPart = right ? truncAnsi(right, innerW) : "";
-  const leftMaxW = Math.max(0, innerW - visLen(rightPart) - (rightPart ? 1 : 0));
+  const leftMaxW = Math.max(
+    0,
+    innerW - visLen(rightPart) - (rightPart ? 1 : 0),
+  );
   const leftPart = truncAnsi(left, leftMaxW);
   const gapW = Math.max(0, innerW - visLen(leftPart) - visLen(rightPart));
   const top = `${borderStyle}╭${"─".repeat(Math.max(0, innerW))}╮${R}`;
   const middle = `${borderStyle}│${R}${leftPart}${" ".repeat(gapW)}${rightPart}${borderStyle}│${R}`;
   const bottom = `${borderStyle}╰${"─".repeat(Math.max(0, innerW))}╯${R}`;
-  return [top, middle, bottom].map((line) =>
-    `${line}${" ".repeat(Math.max(0, maxW - visLen(line)))}${R}${CLEAR_TO_EOL}`,
+  return [top, middle, bottom].map(
+    (line) =>
+      `${line}${" ".repeat(Math.max(0, maxW - visLen(line)))}${R}${CLEAR_TO_EOL}`,
   );
 }
 
@@ -461,7 +466,9 @@ function tableLine(cells: string[], separatorStyle = ""): string {
 function tableHeaderLine(): string {
   const cells = TABLE_COLUMNS.map((col) =>
     tableCell(
-      col.sortCol ? colHdr(col.label, col.sortCol, col.width, col.right) : col.label,
+      col.sortCol
+        ? colHdr(col.label, col.sortCol, col.width, col.right)
+        : col.label,
       col.width,
       `${BG_TABLE_HDR}${WHITE}${B}`,
       col.right,
@@ -471,7 +478,9 @@ function tableHeaderLine(): string {
 }
 
 function tableSeparatorLine(): string {
-  return fullWidthLine(`${D}${"─".repeat(Math.max(0, cols() - WRAP_GUARD_COLS))}${R}`);
+  return fullWidthLine(
+    `${D}${"─".repeat(Math.max(0, cols() - WRAP_GUARD_COLS))}${R}`,
+  );
 }
 
 function tableRowStyle(selected: boolean): string {
@@ -491,8 +500,10 @@ function tableRowLine(
 
 function formatVerdict(verdict: string, selected: boolean): string {
   const rowStyle = tableRowStyle(selected);
-  if (verdict.startsWith("✓ ")) return `${GREEN}✓${R}${rowStyle}${verdict.slice(1)}`;
-  if (verdict.startsWith("x ")) return `${RED}x${R}${rowStyle}${verdict.slice(1)}`;
+  if (verdict.startsWith("✓ "))
+    return `${GREEN}✓${R}${rowStyle}${verdict.slice(1)}`;
+  if (verdict.startsWith("x "))
+    return `${RED}x${R}${rowStyle}${verdict.slice(1)}`;
   return verdict;
 }
 
@@ -676,7 +687,10 @@ function modeTagLine(label: string): string {
   return fullWidthLine(`${BG_OFF}${WHITE} ${label} ${R}`);
 }
 
-function modalFooterLine(items: Array<[string, string]>, lastLine = true): string {
+function modalFooterLine(
+  items: Array<[string, string]>,
+  lastLine = true,
+): string {
   return fullWidthLine(
     ` ${items.map(([key, label]) => footerKey(key, label)).join("  ")} `,
     lastLine,
@@ -739,8 +753,9 @@ function renderMain() {
     for (let i = 0; i < rowsAvailable; i++) {
       if (filtered.length === 0) {
         out +=
-          (i === 0 ? centeredWidthLine(`${D}not found${R}`) : fullWidthLine("")) +
-          "\n";
+          (i === 0
+            ? centeredWidthLine(`${D}not found${R}`)
+            : fullWidthLine("")) + "\n";
         continue;
       }
 
@@ -969,8 +984,10 @@ function clampCursor(next: number) {
 function resolveUserScrollSortPauseMs(cfg: FrouterConfig): number {
   // Env overrides config so users can tune behavior per terminal/session.
   const raw =
-    readEnv("FREE_ROUTER_SCROLL_SORT_PAUSE_MS", "FROUTER_SCROLL_SORT_PAUSE_MS") ??
-    cfg?.ui?.scrollSortPauseMs;
+    readEnv(
+      "FREE_ROUTER_SCROLL_SORT_PAUSE_MS",
+      "FROUTER_SCROLL_SORT_PAUSE_MS",
+    ) ?? cfg?.ui?.scrollSortPauseMs;
   if (raw == null || raw === "") return DEFAULT_USER_SCROLL_SORT_PAUSE_MS;
   const parsed = Number(raw);
   if (!Number.isFinite(parsed) || parsed < 0) {
@@ -1111,9 +1128,7 @@ async function applySelectionToTarget(targetId: TargetId, launch: boolean) {
     return;
   }
   if (notice) w(`\n${notice}\n`);
-  w(
-    `${GREEN} ✓ Wrote ${targetLabel(targetId)} config: ${writtenPath}${R}\n`,
-  );
+  w(`${GREEN} ✓ Wrote ${targetLabel(targetId)} config: ${writtenPath}${R}\n`);
 
   // Guard: missing API key → offer to add it
   if (shouldLaunch && !targetApiKey) {
@@ -1131,9 +1146,7 @@ async function applySelectionToTarget(targetId: TargetId, launch: boolean) {
       openApiKeyEditorFromMain(targetPk);
       return;
     }
-    w(
-      `${YELLOW} Launch cancelled. Set ${envVar} with A, then retry.${R}\n`,
-    );
+    w(`${YELLOW} Launch cancelled. Set ${envVar} with A, then retry.${R}\n`);
     shouldLaunch = false;
   }
 
@@ -1166,7 +1179,9 @@ async function applySelectionToTarget(targetId: TargetId, launch: boolean) {
 }
 
 function targetLabel(targetId: TargetId) {
-  return CONFIG_TARGETS.find((target) => target.id === targetId)?.label ?? targetId;
+  return (
+    CONFIG_TARGETS.find((target) => target.id === targetId)?.label ?? targetId
+  );
 }
 
 function resolveTargetApplySelection(selectedModel: Model, targetId: TargetId) {
@@ -1974,7 +1989,8 @@ async function runUpdateApp(
 }
 
 async function checkForUpdate(): Promise<void> {
-  if (readEnv(UPDATE_SKIP_ONCE_ENV, LEGACY_UPDATE_SKIP_ONCE_ENV) === "1") return;
+  if (readEnv(UPDATE_SKIP_ONCE_ENV, LEGACY_UPDATE_SKIP_ONCE_ENV) === "1")
+    return;
 
   const latest = await fetchLatestVersion();
   if (!latest || !isStrictlyNewerVersion(PKG_VERSION, latest)) return;
